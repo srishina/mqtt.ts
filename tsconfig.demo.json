@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./dist.browser.demo",
+    "rootDir": "./demo",
+    "target": "es2019",
+    "module": "ES6",
+    "moduleResolution": "node",
+    "lib": [
+      "es2019",
+      "dom",
+      "es5"
+    ]
+  },
+  "include": [
+    "./demo/helper.ts",
+  ]
+}

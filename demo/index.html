@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="demo/style.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css" />
+
+    <title>Hello, world! </title>
+</head>
+
+<body>
+    <!-- container -->
+    <div class="container">
+        <!-- Connection Card -->
+        <div class="row">
+            <div class="col-lg-9 px-0">
+                <div class="card bg-light">
+                    <div class="card-header text-primary" id="connection-card">
+                        <a data-toggle="collapse" href="#connection-collapse" aria-expanded="true"
+                            aria-controls="connection-collapse">Connection</a>
+                        <a id="connection-card-status-text"></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 px-0">
+                <div class="card bg-light text-primary">
+                    <div class="card-header"> MQTTv5 Client Library Demo </div>
+                </div>
+            </div>
+            <div id="connection-collapse" class="collapse show">
+                <div class="card-body d-flex flex-column border-primary border border-dark card-body-row-background">
+                    <form>
+                        <div class="row form-group align-items-end card-body-row-background">
+                            <div class="col-lg-4">
+                                <label class="col-md-0 control-label" for="host-input"> Host </label>
+                                <input type="text" class="form-control" id="host-input" value="broker.hivemq.com"
+                                    required="required">
+                            </div>
+                            <div class="col-lg-1">
+                                <label class="col-md-0 control-label" for="port-input"> Port </label>
+                                <input type="text" class="form-control" id="port-input" value="8000">
+                            </div>
+                            <div class="col-lg-1">
+                                <label class="col-md-0 control-label" for="path-input"> Path </label>
+                                <input type="text" class="form-control" id="path-input" value="/mqtt">
+                            </div>
+                            <div class="col-lg-4">
+                                <label class="col-md-0 control-label" for="client-id-input"> Client ID </label>
+                                <input type="text" class="form-control" id="client-id-input" value="mqttv5-ts-client">
+                            </div>
+                            <div class="col-lg-2">
+                                <label for="connect-btn"> </label>
+                                <button type="button" id="connect-btn" class="btn btn-light float-right"> Connect
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row form-group align-items-end card-body-row-background">
+                            <div class="col-lg-3">
+                                <label for="uname-input"> Username </label>
+                                <input type="text" class="form-control" id="uname-input">
+                            </div>
+                            <div class="col-lg-3">
+                                <label for="pwd-input"> Password </label>
+                                <input type="text" class="form-control" id="pwd-input">
+                            </div>
+                            <div class="col-lg-1">
+                                <label for="keep-alive-input"> Keepalive </label>
+                                <input type="number" class="form-control" id="keep-alive-input" value=10>
+                            </div>
+                            <div class="col-lg-2">
+                                <div class="checkbox">
+                                    <label><input type="checkbox" id="clean-session-input" class="check-space" value=""
+                                            checked> Clean Session </label>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row form-group align-items-end card-body-row-background">
+                            <div class="col-lg-2">
+                                <label for="session-exp-interval-input"> Expiry interval
+                                </label>
+                                <input type="number" class="form-control" id="session-exp-interval-input">
+                            </div>
+                            <div class="col-lg-2">
+                                <label for="max-recv-pkts-input"> Max Receive Packets </label>
+                                <input type="number" class="form-control" id="max-recv-pkts-input">
+                            </div>
+                            <div class="col-lg-2">
+                                <label for="max-pkt-size-input"> Max Packet Size </label>
+                                <input type="number" class="form-control" id="max-pkt-size-input">
+                            </div>
+                            <div class="col-lg-2">
+                                <label for="topic-alias-max-input"> Topic Alias Max </label>
+                                <input type="number" class="form-control" id="topic-alias-max-input">
+                            </div>
+                            <div class="col-lg-2">
+                                <label for="auth-method-input"> Auth Method </label>
+                                <input type="text" class="form-control" id="auth-method-input">
+                            </div>
+                            <div class="col-lg-2">
+                                <label for="auth-data-input"> Auth Data </label>
+                                <input type="text" class="form-control" id="auth-data-input">
+                            </div>
+                        </div>
+                        <div class="row form-group align-items-end card-body-row-background">
+                            <div class="col-lg-2">
+                                <div class="checkbox">
+                                    <label><input type="checkbox" id="req-resp-info-input" class="check-space" value="">
+                                        Request
+                                        resp info </label>
+                                </div>
+                            </div>
+                            <div class="col-lg-2">
+                                <div class="checkbox">
+                                    <label><input type="checkbox" id="req-prob-info-input" class="check-space" value="">
+                                        Request prob info </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- End of Connection Card -->
+        <!-- Subscribe Card -->
+        <div class="row">
+            <div class="col-lg-6 pl-0 card-body-row-background">
+                <div class="card bg-light">
+                    <div class="card-header text-primary" id="subscribe-card">
+                        <a data-toggle="collapse" href="#subscribe-collapse" aria-expanded="true"
+                            aria-controls="subscribe-collapse">
+                            Subscribe
+                        </a>
+                    </div>
+                </div>
+                <div id="subscribe-collapse" class="collapse">
+                    <div
+                        class="card-body d-flex flex-column border-primary border border-dark card-body-row-background">
+                        <form class="form-horizontal">
+                            <div class="row form-group align-items-end card-body-row-background">
+                                <div class="col-lg-12">
+                                    <label class="col-md-0 control-label" for="subscribe-topic-input"> Topic </label>
+                                    <input type="text" class="form-control" id="subscribe-topic-input" value=""
+                                        required="required">
+                                </div>
+                            </div>
+                            <div class="row form-group align-items-end card-body-row-background">
+                                <div class="col-lg-3">
+                                    <label for="subscribe-qos-input" class="control-label"> QoS </label>
+                                    <select class="form-control" id="subscribe-qos-input">
+                                        <option>0 </option>
+                                        <option> 1 </option>
+                                        <option> 2 </option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-9">
+                                    <label class="col-md-0 control-label" for="subscribe-id-input">
+                                        Identifier
+                                    </label>
+                                    <input type="text" class="form-control" id="subscribe-id-input" value=""
+                                        required="required">
+                                </div>
+                            </div>
+                            <div class="row form-group card-body-row-background">
+                                <div class="col-lg-12 pt-4">
+                                    <label for="subscribe-btn"> </label>
+                                    <button type="button" id="subscribe-btn" class="btn btn-light float-right">
+                                        Subscribe
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- End of Subscribe Card -->
+
+            <!-- Unsubscribe Card -->
+            <div class="col-lg-6 pl-0 card-body-row-background">
+                <div class="card bg-light">
+                    <div class="card-header text-primary" id="unsubscribe-card">
+                        <a data-toggle="collapse" href="#unsubscribe-collapse" aria-expanded="true"
+                            aria-controls="unsubscribe-collapse">
+                            Unsubscribe
+                        </a>
+                    </div>
+                </div>
+                <div id="unsubscribe-collapse" class="collapse">
+                    <div
+                        class="card-body d-flex flex-column border-primary border border-dark card-body-row-background">
+                        <form>
+                            <div class="row form-group align-items-end card-body-row-background">
+                                <div class="col-lg-12">
+                                    <label class="col-md-0 control-label" for="unsubscribe-topic-input"> Topic(comma
+                                        separated) </label>
+                                    <input type="text" class="form-control" id="unsubscribe-topic-input" value=""
+                                        required="required">
+                                </div>
+                            </div>
+                            <div class="row form-group align-items-end card-body-row-background">
+                                <div class="col-lg-12 text-center">
+                                    <label class="col-md-0 control-label" for="subscribe-topic-input"> Or </label>
+                                </div>
+                            </div>
+                            <div class="row card-body-row-background">
+                                <div class="col-lg-10 multi-select-box">
+                                    <select class="multi-select w-100" id="subscriptions-input" class="selectpicker"
+                                        multiple data - selected - text - format="count > 5"
+                                        title="No subscriptions available...">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row form-group card-body-row-background">
+                                <div class="col-lg-12 pt-4">
+                                    <button type="button" id="unsubscribe-btn" class="btn btn-light float-right">
+                                        Unsubscribe
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- End of Unsubscribe Card -->
+        </div>
+        <!-- Publish Card -->
+        <div class="row">
+            <div class="col-lg-12 pl-0 card-body-row-background">
+                <div class="card bg-light">
+                    <div class="card-header text-primary" id="publish-card">
+                        <a data-toggle="collapse" href="#publish-collapse" aria-expanded="true"
+                            aria-controls="publish-collapse">
+                            Publish
+                        </a>
+                    </div>
+                </div>
+                <div id="publish-collapse" class="collapse">
+                    <div
+                        class="card-body d-flex flex-column border-primary border border-dark card-body-row-background">
+                        <form>
+                            <div class="row form-group align-items-top card-body-row-background">
+                                <div class="col-lg-4">
+                                    <label class="col-md-0 control-label" for="publish-topic-input">
+                                        Topic
+                                    </label>
+                                    <input type="text" class="form-control" id="publish-topic-input" value=""
+                                        required="required">
+                                </div>
+                                <div class="col-lg-1">
+                                    <label for="publish-qos-input" class="control-label">
+                                        QoS
+                                    </label>
+                                    <select class="form-control" id="publish-qos-input">
+                                        <option>0</option>
+                                        <option>1</option>
+                                        <option>2</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-1 text-center">
+                                    <label class="pb-3" for="publish-topic-retain-input">
+                                        Retain
+                                    </label>
+                                    <br>
+                                    <input class="pb-2" type="checkbox" id="publish-topic-retain-input">
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label for="publish-msg-input">Message</label>
+                                        <textarea class="form-control" id="publish-msg-input" rows="4"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row form-group align-items-end card-body-row-background">
+                                <div class="col-lg-2">
+                                    <label for="msg-exp-interval-input">Expiry interval</label>
+                                    <input type="number" class="form-control" id="msg-exp-interval-input">
+                                </div>
+                                <div class="col-lg-1">
+                                    <label for="topic-alias-input">Alias</label>
+                                    <input type="number" class="form-control" id="topic-alias-input">
+                                </div>
+                                <div class="col-lg-3">
+                                    <label for="response-topic-input">Response Topic</label>
+                                    <input type="text" class="form-control" id="response-topic-input">
+                                </div>
+                                <div class="col-lg-1">
+                                    <label for="subscription-id-input">Subsc ID</label>
+                                    <input type="number" class="form-control" id="subscription-id-input">
+                                </div>
+                                <div class="col-lg-3">
+                                    <label for="content-type-input">Content Type
+                                    </label>
+                                    <input type="text" class="form-control" id="content-type-input">
+                                </div>
+                                <div class="col-lg-2 text-center">
+                                    <label class="pb-3" for="payload-fmt-indicator-input">Format Indicator</label>
+                                    <br>
+                                    <input class="pb-2" type="checkbox" id="payload-fmt-indicator-input">
+                                </div>
+                            </div>
+                            <div class="row form-group align-items-end card-body-row-background">
+                                <div class="col-lg-10">
+                                    <label for="correlation-data-input">Correlation Data</label>
+                                    <input type="text" class="form-control" id="correlation-data-input">
+                                </div>
+                                <div class="col-lg-2">
+                                    <button type="button" id="publish-btn"
+                                        class="btn btn-light float-right">Publish</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End of Publish Card -->
+
+        <!-- Received Message Card -->
+        <div class="row">
+            <div class="col-lg-12 pl-0 card-body-row-background">
+                <div class="card bg-light">
+                    <div class="card-header text-primary" id="received-msg-card">
+                        <a data-toggle="collapse" href="#received-msg-collapse" aria-expanded="true"
+                            aria-controls="received-msg-collapse">
+                            Received Messages
+                        </a>
+                    </div>
+                </div>
+                <div id="received-msg-collapse" class="collapse">
+                    <div
+                        class="card-body d-flex flex-column border-primary border border-dark card-body-row-background">
+                        <table id="recvd-msg-table" class="table table-fixed">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="col-3">Topic</th>
+                                    <th scope="col" class="col-1">QoS</th>
+                                    <th scope="col" class="col-3">Payload</th>
+                                    <th scope="col" class="col-5">Properties</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recvd-msg-tbl-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End of Received Message Card -->
+        <!-- Sent Message Card -->
+        <div class="row">
+            <div class="col-lg-12 pl-0 card-body-row-background">
+                <div class="card bg-light">
+                    <div class="card-header text-primary" id="sent-msg-card">
+                        <a data-toggle="collapse" href="#sent-msg-collapse" aria-expanded="true"
+                            aria-controls="sent-msg-collapse">
+                            Sent Messages
+                        </a>
+                    </div>
+                </div>
+                <div id="sent-msg-collapse" class="collapse">
+                    <div
+                        class="card-body d-flex flex-column border-primary border border-dark card-body-row-background">
+                        <table id="sent-msg-table" class="table table-fixed table-condensed">
+                            <thead>
+                                <tr>
+                                    <th class="w-20"> Topic </th>
+                                    <th class="w-10"> QoS </th>
+                                    <th class="w-40"> Payload </th>
+                                    <th class="w-30"> Properties </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End of Sent Message Card -->
+
+        <!-- Logging card -->
+        <div class="row">
+            <div class="col-lg-12 pl-0 card-body-row-background">
+                <div class="card bg-light">
+                    <div class="card-header text-primary" id="logging-card">
+                        <a data-toggle="collapse" href="#logs-collapse" aria-expanded="true"
+                            aria-controls="logs-collapse">
+                            Logs
+                        </a>
+                    </div>
+                </div>
+                <div id="logs-collapse" class="collapse">
+                    <div id="log-msg" style="overflow-y: scroll; height:200px;">
+                        <!-- The rows are added when the log messages are received -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End of Logging card  -->
+    </div>
+    <br>
+    <br>
+    <!-- End of container -->
+    <!-- Optional JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"> </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"> </script>
+    <script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"> </script>
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"> </script>
+    <script type="text/javascript" src="../dist.browser/mqttv5-cli-demo.js"> </script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('.multi-select').selectpicker();
+            // var opt = $('<option/>');
+            // opt.attr({ 'value': 'India' }).text('India');
+            // $("#subscriptions-input").append(opt)
+            // $('#subscriptions-input').selectpicker('refresh');
+            $("#recvd-msg-table tr").click(function () {
+                $(".clickable-row").on("click", function () {
+                    $(".row-highlight").removeClass("row-highlight");
+                    $(this).addClass("row-highlight");
+                });
+            });
+            $("#sent-msg-table tr").click(function () {
+                $(".clickable-row").on("click", function () {
+                    $(".row-highlight").removeClass("row-highlight");
+                    $(this).addClass("row-highlight");
+                });
+            });
+        });
+        function myFunction() {
+            // var allVal=$("#subscriptions-input").val();
+            // console.log(allVal);
+            // return false;
+        }
+    </script>
+</body>
+
+</html>
+
+<!-- onclick="connectionToggle();" connect button toggle -->
+
+<!--https://stackoverflow.com/questions/23141854/adding-asterisk-to-required-fields-in-bootstrap-3 -->

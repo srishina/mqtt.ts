@@ -1,0 +1,24 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended"
+    ],
+    "rules": {
+      "semi": "error",
+      "no-multiple-empty-lines": ["error", { "max": 1, "maxBOF": 0, "maxEOF": 0 }],
+      "no-trailing-spaces": ["error", { "skipBlankLines": true }],
+      "@typescript-eslint/no-namespace": "off",
+      "consistent-this": [2, "self"],
+      "@typescript-eslint/no-this-alias": [
+        "error",
+        {
+          "allowedNames": ["self"] // Allow `const self = this`; `[]` by default
+        }]      
+    }
+}

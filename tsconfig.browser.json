@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./dist.browser",
+    "target": "es2019",
+    "module": "ES6",
+    "declaration": true,
+    "declarationMap": true,
+    "moduleResolution": "node",
+    "lib": [
+      "es2019",
+      "dom",
+      "es5"
+    ]
+  },
+  "include": [
+    "./src/index.ts"
+  ]
+}

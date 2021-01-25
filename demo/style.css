@@ -1,0 +1,98 @@
+/* body {
+    padding-top: 10px;
+    padding-bottom: 20px;
+}
+
+*/
+
+.row {
+    background-color: #eee;
+}
+
+.border-dark {
+    border-color: #eee!important;
+}
+
+.card-body-row-background   {
+    background-color: white;
+}
+
+.row-padding {
+    padding-bottom: 6px;
+}
+
+.btn-padding {
+    padding-top: 2px;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type = number] {
+    -moz-appearance: textfield;
+}
+
+.check-space{
+    margin-right: 6px;
+}
+  
+.multi-select-box {
+    width: 400px;
+    margin: auto auto;
+}
+
+.multi-select-box select {
+    width: 100%;
+}
+
+.form-group label{
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+table {
+    table-layout: fixed;
+    word-wrap: break-word;
+}
+
+.table-responsive {
+    max-height:300px;
+}
+
+/* y w-* options are: .w-25, .w-50, .w-75, .w-100, .w-auto 
+so w-10 needs to be added .w-10 { width: 10% !important; } to the localized css file. */
+.w-10 {
+    width: 10% !important;
+}
+
+.w-20 {
+    width: 20% !important;
+}
+
+.w-30 {
+    width: 30% !important;
+}
+
+.w-40 {
+    width: 40% !important;
+}
+
+.row-highlight {
+    background-color: lightBlue;
+}
+
+tbody {
+    display:block;
+    overflow-y:scroll;
+    height:100px;
+}
+
+thead, tbody tr {
+    display:table;
+    width:100%;
+    table-layout:fixed;
+}
