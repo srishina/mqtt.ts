@@ -36,6 +36,17 @@ export type MQTTPublish = {
     subscriptionIdentifiers?: number[];
 };
 
+function validateFlags(msg: MQTTPublish): void | never {
+    if (msg.qos && msg.qos == 0 && msg.dup) {
+        throw new Error("invalid publish flags - Malformed packet");
+    }
+
+    if (msg.qos && msg.qos > 2) {
+        throw new Error("invalid QoS flag- Malformed packet");
+    }
+}
+
+
 export class PublishPacket extends PacketWithID {
     public msg: MQTTPublish;
 
@@ -71,6 +82,8 @@ export class PublishPacket extends PacketWithID {
     }
 
     build(): Uint8Array | never {
+        validateFlags(this.msg);
+
         const propertyLen = this.propertyLength();
 
         let remainingLength = (2 + this.msg.topic.length + propertyLen + encodedVarUint32Size(propertyLen));
@@ -116,6 +129,8 @@ export function decodePublishPacket(byte0: number, dec: DataStreamDecoder): {pkt
     data.qos = (byte0 >> 1) & 0x03;
     data.dup = (byte0 & 0x08) > 0;
     data.retain = (byte0 & 0x01) > 0;
+
+    validateFlags(data);
 
     // Decode UTF8 string
     data.topic = dec.decodeUTF8String();

@@ -60,9 +60,14 @@ export class SubscribePacket extends PacketWithID {
         this.msg.subscriptions.forEach(function (el) {
             encoder.encodeUTF8String(el.topicFilter);
 
+            let qos = (el.qos ? el.qos : 0);
+            if (qos > 2) {
+                throw new Error("invalid QoS flag- Malformed packet");
+            }
+
             let b = 0;
             // write subscribe options
-            b |= ((el.qos ? el.qos : 0) & 0x03);
+            b |= (qos & 0x03);
             if (el.noLocal) {
                 b |= 0x04;
             }
