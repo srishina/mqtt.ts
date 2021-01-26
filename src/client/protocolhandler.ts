@@ -22,7 +22,7 @@ import {decodeConnAckPacket, MQTTConnAck} from "../message/connack";
 import {MQTTPublish} from "../message/publish";
 import {MessageEvents} from "./eventhandler";
 import TypedEventEmitter from "typed-emitter";
-import {ServerDisconnectedError, ServerSessionContinuityNotAvailable} from "./errors";
+import {ServerDisconnectedError} from "./errors";
 import {buildHeaderOnlyPacket, PacketWithID} from "../message/packet";
 
 export type Subscriber = Observer<MQTTPublish>

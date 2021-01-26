@@ -88,7 +88,7 @@ so w-10 needs to be added .w-10 { width: 10% !important; } to the localized css 
 tbody {
     display:block;
     overflow-y:scroll;
-    height:100px;
+    height:200px;
 }
 
 thead, tbody tr {
