@@ -60,12 +60,10 @@ function logPublishMessages(table: HTMLTableElement, msg: mqttv5.MQTTPublish): v
     const rowCell = tableRow.insertCell();
     const rowCell2 = tableRow.insertCell();
     const rowCell3 = tableRow.insertCell();
-    const rowCell4 = tableRow.insertCell();
 
     rowCell.appendChild(document.createTextNode(msg.topic));
     rowCell2.appendChild(document.createTextNode(msg.qos.toString()));
     rowCell3.appendChild(document.createTextNode(mqttv5.getPayloadAsString(msg.payload)));
-    rowCell4.appendChild(document.createTextNode("none"));
 }
 
 class DemoSubscriber implements mqttv5.Subscriber {

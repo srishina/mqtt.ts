@@ -10,11 +10,13 @@ import {MQTTConnAckReason} from '../message/connack';
 import {Subscriber} from './protocolhandler';
 import {testMockServer} from "./mockserver";
 import {PacketType} from '../utils/constants';
+import {MQTTSubscribe} from '../message/subscribe';
 import {MQTTUnsubAck, MQTTUnsubAckReason} from '../message/unsubscribe';
 import {MQTTPubAck, MQTTPubAckReason} from '../message/puback';
 import {MQTTPubRec, MQTTPubRecReason} from '../message/pubrec';
 import {MQTTPubRel, MQTTPubRelReason} from '../message/pubrel';
 import {MQTTPubComp, MQTTPubCompReason} from '../message/pubcomp';
+import {ResubscribeResult} from './eventhandler';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -30,8 +32,9 @@ function delay(ms: number) {
 
 describe('MQTT client connection test with a mock server', function () {
     this.timeout(3000);
+
     it('Simple MQTT Client connect/close', async () => {
-        const server: testMockServer = new testMockServer({sessionPresent: false, reasonCode: MQTTConnAckReason.Code.Success});
+        const server = new testMockServer({sessionPresent: false, reasonCode: MQTTConnAckReason.Code.Success});
         server.start();
         const client = await MQTTClient.connect(testURLLocalhost, {cleanStart: true, keepAlive: 0}, 2000);
         expect(() => client.disconnect()).to.not.throw();
@@ -67,6 +70,48 @@ describe('MQTT client connection test with a mock server', function () {
         server.stop();
     });
 
+    it('Simple MQTT Client auto resubscribe after a reconnect', async () => {
+        const server: testMockServer = new testMockServer({sessionPresent: false, reasonCode: MQTTConnAckReason.Code.Success});
+        server.start();
+
+        const responses = new Map<PacketType, MQTTSubAck | MQTTUnsubAck>(
+            [
+                [PacketType.SUBACK, {reasonCodes: [MQTTSubAckReason.Code.GrantedQoS2]}],
+                [PacketType.UNSUBACK, {reasonCodes: [MQTTUnsubAckReason.Code.Success]}],
+            ]
+        );
+        server.setResponses(responses);
+        class TestSubscriber implements Subscriber {
+            onData(msg: MQTTPublish): void {
+                // do nothing
+            }
+        }
+
+        let resubscribed: boolean = false;
+        const client = await MQTTClient.connect(testURLLocalhost, {cleanStart: true, keepAlive: 0}, 2000);
+        client.on("resubscription", (subscribe: MQTTSubscribe, result: ResubscribeResult) => {
+            if (result.suback) {
+                resubscribed = true;
+            } else {
+                expect.fail("Resubscription resulted in an error");
+            }
+        });
+        const subscriber = new TestSubscriber();
+
+        const s: MQTTSubscription = {topicFilter: 'subu/test/#', qos: 2};
+        const suback = await client.subscribe({subscriptions: [s]}, subscriber);
+        expect([...suback.reasonCodes]).to.have.members([2]);
+
+        server.closeClientConnection();
+        await delay(2000); // wait for 500ms, to reinitializes
+        expect(resubscribed).to.true;
+
+        const unsuback = await client.unsubscribe({topicFilters: ['subu/test/#']});
+        expect([...unsuback.reasonCodes]).to.have.members([0]);
+        expect(() => client.disconnect()).to.not.throw();
+        server.stop();
+    });
+
     it('Simple MQTT Client PUBLISH QoS 1', async () => {
         const server: testMockServer = new testMockServer({sessionPresent: false, reasonCode: MQTTConnAckReason.Code.Success});
         server.start();
@@ -77,8 +122,7 @@ describe('MQTT client connection test with a mock server', function () {
             ]
         );
         server.setResponses(responses);
-
-        const client = await MQTTClient.connect(testURL, {cleanStart: true, keepAlive: 0}, 2000);
+        const client = await MQTTClient.connect(testURLLocalhost, {cleanStart: true, keepAlive: 0}, 2000);
         await client.publish({topic: 'subu/test/1', payload: "foo", qos: 1});
         expect(() => client.disconnect()).to.not.throw();
         server.stop();
@@ -96,7 +140,7 @@ describe('MQTT client connection test with a mock server', function () {
         );
         server.setResponses(responses);
 
-        const client = await MQTTClient.connect(testURL, {cleanStart: true, keepAlive: 0}, 2000);
+        const client = await MQTTClient.connect(testURLLocalhost, {cleanStart: true, keepAlive: 0}, 2000);
         await client.publish({topic: 'subu/test/1', payload: "foo", qos: 2});
         expect(() => client.disconnect()).to.not.throw();
         server.stop();

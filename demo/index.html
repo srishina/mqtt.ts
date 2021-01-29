@@ -9,7 +9,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
         integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link rel="stylesheet" href="demo/style.css">
+    <link rel="stylesheet" href="./style.css">
 
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css" />
@@ -345,8 +345,7 @@
                                 <tr>
                                     <th scope="col" class="col-3">Topic</th>
                                     <th scope="col" class="col-1">QoS</th>
-                                    <th scope="col" class="col-3">Payload</th>
-                                    <th scope="col" class="col-5">Properties</th>
+                                    <th scope="col" class="col-8">Payload</th>
                                 </tr>
                             </thead>
                             <tbody id="recvd-msg-tbl-body">
@@ -374,10 +373,9 @@
                         <table id="sent-msg-table" class="table table-fixed table-condensed">
                             <thead>
                                 <tr>
-                                    <th class="w-20"> Topic </th>
-                                    <th class="w-10"> QoS </th>
-                                    <th class="w-40"> Payload </th>
-                                    <th class="w-30"> Properties </th>
+                                    <th scope="col" class="col-3">Topic</th>
+                                    <th scope="col" class="col-1">QoS</th>
+                                    <th scope="col" class="col-8">Payload</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -424,7 +422,7 @@
         crossorigin="anonymous"> </script>
     <script type="text/javascript"
         src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"> </script>
-    <script type="text/javascript" src="../dist.browser/mqttv5-cli-demo.js"> </script>
+    <script type="text/javascript" src="./mqttv5-cli-demo.js"> </script>
     <script type="text/javascript">
         $(document).ready(function () {
             $('.multi-select').selectpicker();

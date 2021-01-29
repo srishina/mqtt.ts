@@ -49,6 +49,10 @@ export class testMockServer {
         });
     }
 
+    closeClientConnection(): void {
+        this.conn!.close();
+    }
+
     stop() {
         this.server.close();
     }

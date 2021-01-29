@@ -568,11 +568,16 @@ export class ProtocolHandler implements PingerCallback {
             subscribeMsg.deferred.getPromise()
                 .then((value: MQTTSubAck | MQTTUnsubAck | void) => {
                     // we are resubscribed, inform the client todo... emit resubscribe
+                    // store the subscribe packets
+                    this.subscriptionCache.push(el);
+                    this.eventEmitter.emit("resubscription", el, {suback: value as MQTTSubAck});
                 })
-                .catch((err) => {
-                    // resubscribe failed, inform the client todo... emit resubscribe
+                .catch((err: Error) => {
+                    // resubscribe failed, inform the client
+                    this.eventEmitter.emit("resubscription", el, {err: err});
                 });
         });
+        this.subscriptionCache = new subscriptionCache();
     }
 
     sendUnsubscribe(msg: MQTTUnsubscribe): Promise<MQTTUnsubAck> {

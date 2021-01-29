@@ -1,5 +1,5 @@
 {
-  "name": "mqttv5-ts",
+  "name": "mqtt-ts",
   "version": "0.5.0",
   "description": "MQTTv5 client library",
   "main": "dist/index.js",
@@ -8,11 +8,14 @@
     "test": "mocha --reporter spec --require ts-node/register 'src/**/*.test.ts'",
     "lint": "eslint --fix ./src/ --ext .ts",
     "build": "tsc --declaration && tsc -p tsconfig.browser.json && tsc -p tsconfig.demo.json",
+    "clean": "rm -rf ./dist ./dist.browser ./dist.browser.demo",
     "minify": "jsmin -o ./dist/index.min.js ./dist/index.js",
-    "postbuild": "browserify ./dist.browser.demo/helper.js -p esmify > ./dist.browser/mqttv5-cli-demo.js && terser ./dist.browser/mqttv5-cli-demo.js -o ./dist.browser/mqttv5-cli-demo.min.js"
+    "postbuild": "cp ./demo/style.css ./demo/index.html ./dist.browser.demo/ && browserify ./dist.browser.demo/helper.js -p esmify > ./dist.browser.demo/mqttv5-cli-demo.js && terser --compress --mangle -o ./dist.browser.demo/mqttv5-cli-demo.min.js -- ./dist.browser.demo/mqttv5-cli-demo.js"
   },
   "keywords": [],
-  "author": "ME",
+  "contributors": [
+    "Subramanian R S"
+  ],
   "license": "MIT",
   "devDependencies": {
     "@types/bootstrap-select": "^1.13.1",
@@ -29,12 +32,14 @@
     "eslint-plugin-react": "^7.21.5",
     "esmify": "^2.1.1",
     "mocha": "^8.2.1",
+    "ts-node": "^9.1.1",
     "typed-emitter": "^1.3.1",
     "typescript": "^4.1.3"
   },
   "dependencies": {
     "@types/ws": "^7.4.0",
     "browser-resolve": "^2.0.0",
+    "chai-as-promised": "^7.1.1",
     "loglevel": "^1.7.1",
     "ws": "^7.4.1",
     "yargs": "^13.3.2"
