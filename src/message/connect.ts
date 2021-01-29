@@ -2,10 +2,7 @@ import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, en
 import {PacketType, PropertyID} from '../utils/constants';
 import {DecoderError} from '../client/errors';
 
-export type MQTTConnect = {
-    cleanStart: boolean;
-    keepAlive: number;
-
+export type MQTTConnectProperties = {
     sessionExpiryInterval?: number;
     receiveMaximum?: number;
     maximumPacketSize?: number;
@@ -15,9 +12,15 @@ export type MQTTConnect = {
     userProperty?: Map<string, string>;
     authenticationMethod?: string;
     authenticationData?: Uint8Array;
+}
+
+export type MQTTConnect = {
+    cleanStart: boolean;
+    keepAlive: number;
+
+    properties?: MQTTConnectProperties;
 
     clientIdentifier?: string;
-
     userName?: string;
     password?: Uint8Array;
 }
@@ -28,31 +31,34 @@ const MQTTProtocolVersion = 0x05;
 export function encodeConnectPacket(msg: MQTTConnect): Uint8Array | never {
     function propertyLength(): number {
         let propertyLen = 0;
-        propertyLen += PropertySizeIfNotEmpty.fromUint32(msg.sessionExpiryInterval);
-        propertyLen += PropertySizeIfNotEmpty.fromUint16(msg.receiveMaximum);
-        propertyLen += PropertySizeIfNotEmpty.fromUint32(msg.maximumPacketSize);
-        propertyLen += PropertySizeIfNotEmpty.fromUint16(msg.topicAliasMaximum);
-        propertyLen += PropertySizeIfNotEmpty.fromBool(msg.requestProblemInformation);
-        propertyLen += PropertySizeIfNotEmpty.fromBool(msg.requestResponseInformation);
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8StringPair(msg.userProperty);
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.authenticationMethod);
-        propertyLen += PropertySizeIfNotEmpty.fromBinaryData(msg.authenticationData);
-        // TODO user property
+        if (msg.properties) {
+            propertyLen += PropertySizeIfNotEmpty.fromUint32(msg.properties.sessionExpiryInterval);
+            propertyLen += PropertySizeIfNotEmpty.fromUint16(msg.properties.receiveMaximum);
+            propertyLen += PropertySizeIfNotEmpty.fromUint32(msg.properties.maximumPacketSize);
+            propertyLen += PropertySizeIfNotEmpty.fromUint16(msg.properties.topicAliasMaximum);
+            propertyLen += PropertySizeIfNotEmpty.fromBool(msg.properties.requestProblemInformation);
+            propertyLen += PropertySizeIfNotEmpty.fromBool(msg.properties.requestResponseInformation);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8StringPair(msg.properties.userProperty);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.properties.authenticationMethod);
+            propertyLen += PropertySizeIfNotEmpty.fromBinaryData(msg.properties.authenticationData);
+        }
 
         return propertyLen;
     }
 
     function encodeProperties(enc: DataStreamEncoder, propertyLen: number): void | never {
         enc.encodeVarUint32(propertyLen);
-        PropertyEncoderIfNotEmpty.fromUint32(enc, PropertyID.SessionExpiryIntervalID, msg.sessionExpiryInterval);
-        PropertyEncoderIfNotEmpty.fromUint16(enc, PropertyID.ReceiveMaximumID, msg.receiveMaximum);
-        PropertyEncoderIfNotEmpty.fromUint32(enc, PropertyID.MaximumPacketSizeID, msg.maximumPacketSize);
-        PropertyEncoderIfNotEmpty.fromUint16(enc, PropertyID.TopicAliasMaximumID, msg.topicAliasMaximum);
-        PropertyEncoderIfNotEmpty.fromBool(enc, PropertyID.RequestProblemInfoID, msg.requestProblemInformation);
-        PropertyEncoderIfNotEmpty.fromBool(enc, PropertyID.RequestResponseInfoID, msg.requestResponseInformation);
-        PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, msg.userProperty);
-        PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.AuthenticationMethodID, msg.authenticationMethod);
-        PropertyEncoderIfNotEmpty.fromBinaryData(enc, PropertyID.AuthenticationDataID, msg.authenticationData);
+        if (msg.properties) {
+            PropertyEncoderIfNotEmpty.fromUint32(enc, PropertyID.SessionExpiryIntervalID, msg.properties.sessionExpiryInterval);
+            PropertyEncoderIfNotEmpty.fromUint16(enc, PropertyID.ReceiveMaximumID, msg.properties.receiveMaximum);
+            PropertyEncoderIfNotEmpty.fromUint32(enc, PropertyID.MaximumPacketSizeID, msg.properties.maximumPacketSize);
+            PropertyEncoderIfNotEmpty.fromUint16(enc, PropertyID.TopicAliasMaximumID, msg.properties.topicAliasMaximum);
+            PropertyEncoderIfNotEmpty.fromBool(enc, PropertyID.RequestProblemInfoID, msg.properties.requestProblemInformation);
+            PropertyEncoderIfNotEmpty.fromBool(enc, PropertyID.RequestResponseInfoID, msg.properties.requestResponseInformation);
+            PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, msg.properties.userProperty);
+            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.AuthenticationMethodID, msg.properties.authenticationMethod);
+            PropertyEncoderIfNotEmpty.fromBinaryData(enc, PropertyID.AuthenticationDataID, msg.properties.authenticationData);
+        }
     }
 
     const propertyLen = propertyLength();
@@ -127,50 +133,53 @@ export function decodeConnectPacket(dec: DataStreamDecoder): MQTTConnect | never
     const data: MQTTConnect = {cleanStart: cleanStart, keepAlive: keepAlive};
 
     let propertyLen = dec.decodeVarUint32();
-    while (propertyLen > 0) {
+    if (propertyLen > 0) {
+        data.properties = {};
+    }
+    while (propertyLen > 0 && data.properties) {
         const id = dec.decodeVarUint32();
         propertyLen--;
         switch (id) {
             case PropertyID.SessionExpiryIntervalID:
-                data.sessionExpiryInterval = PropertyDecoderOnlyOnce.toUint32(dec, id, data.sessionExpiryInterval);
+                data.properties.sessionExpiryInterval = PropertyDecoderOnlyOnce.toUint32(dec, id, data.properties.sessionExpiryInterval);
                 propertyLen -= 4;
                 break;
             case PropertyID.ReceiveMaximumID:
-                data.receiveMaximum = PropertyDecoderOnlyOnce.toUint16(dec, id, data.receiveMaximum);
+                data.properties.receiveMaximum = PropertyDecoderOnlyOnce.toUint16(dec, id, data.properties.receiveMaximum);
                 propertyLen -= 2;
                 break;
             case PropertyID.MaximumPacketSizeID:
-                data.maximumPacketSize = PropertyDecoderOnlyOnce.toUint32(dec, id, data.maximumPacketSize);
+                data.properties.maximumPacketSize = PropertyDecoderOnlyOnce.toUint32(dec, id, data.properties.maximumPacketSize);
                 propertyLen -= 4;
                 break;
             case PropertyID.TopicAliasMaximumID:
-                data.topicAliasMaximum = PropertyDecoderOnlyOnce.toUint16(dec, id, data.topicAliasMaximum);
+                data.properties.topicAliasMaximum = PropertyDecoderOnlyOnce.toUint16(dec, id, data.properties.topicAliasMaximum);
                 propertyLen -= 2;
                 break;
             case PropertyID.RequestProblemInfoID:
-                data.requestProblemInformation = PropertyDecoderOnlyOnce.toBool(dec, id, data.requestProblemInformation);
+                data.properties.requestProblemInformation = PropertyDecoderOnlyOnce.toBool(dec, id, data.properties.requestProblemInformation);
                 propertyLen -= 1;
                 break;
             case PropertyID.RequestResponseInfoID:
-                data.requestResponseInformation = PropertyDecoderOnlyOnce.toBool(dec, id, data.requestResponseInformation);
+                data.properties.requestResponseInformation = PropertyDecoderOnlyOnce.toBool(dec, id, data.properties.requestResponseInformation);
                 propertyLen -= 1;
                 break;
             case PropertyID.UserPropertyID: {
-                if (!data.userProperty) {
-                    data.userProperty = new Map<string, string>();
+                if (!data.properties.userProperty) {
+                    data.properties.userProperty = new Map<string, string>();
                 }
                 const {key, value} = dec.decodeUTF8StringPair();
-                data.userProperty.set(key, value);
+                data.properties.userProperty.set(key, value);
                 propertyLen -= (key.length + value.length + 4);
                 break;
             }
             case PropertyID.AuthenticationMethodID:
-                data.authenticationMethod = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.authenticationMethod);
-                propertyLen -= (data.authenticationMethod.length + 2);
+                data.properties.authenticationMethod = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.properties.authenticationMethod);
+                propertyLen -= (data.properties.authenticationMethod.length + 2);
                 break;
             case PropertyID.AuthenticationDataID:
-                data.authenticationData = PropertyDecoderOnlyOnce.toBinaryData(dec, id, data.authenticationData);
-                propertyLen -= (data.authenticationData.length + 2);
+                data.properties.authenticationData = PropertyDecoderOnlyOnce.toBinaryData(dec, id, data.properties.authenticationData);
+                propertyLen -= (data.properties.authenticationData.length + 2);
                 break;
             default:
                 throw new DecoderError("CONNECT: wrong property with identifier " + id);

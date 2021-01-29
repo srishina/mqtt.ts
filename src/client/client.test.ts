@@ -87,7 +87,7 @@ describe('MQTT client connection test with a mock server', function () {
             }
         }
 
-        let resubscribed: boolean = false;
+        let resubscribed = false;
         const client = await MQTTClient.connect(testURLLocalhost, {cleanStart: true, keepAlive: 0}, 2000);
         client.on("resubscription", (subscribe: MQTTSubscribe, result: ResubscribeResult) => {
             if (result.suback) {

@@ -46,7 +46,7 @@ describe('MQTT PUBREC test', () => {
             ...reasonBytes
         ]);
 
-        const pubcomp = new MQTTPubRecPacket(id, {reason: MQTTPubRecReason.Code.Success, reasonString: reasonString});
+        const pubcomp = new MQTTPubRecPacket(id, {reason: MQTTPubRecReason.Code.Success, properties: {reasonString: reasonString}});
         expect(pubcomp.build()).to.eql(encoded);
     });
 });

@@ -20,10 +20,14 @@ export namespace MQTTPubRelReason {
     ]);
 }
 
-export type MQTTPubRel = {
-    reason: MQTTPubRelReason.Code;
+export type MQTTPubRelProperties = {
     reasonString?: string;
     userProperty?: Map<string, string>;
+}
+
+export type MQTTPubRel = {
+    reason: MQTTPubRelReason.Code;
+    properties?: MQTTPubRelProperties;
 }
 
 export class MQTTPubRelPacket extends PublishResponsePacket {
@@ -35,20 +39,24 @@ export class MQTTPubRelPacket extends PublishResponsePacket {
 
     propertyLength(): number {
         let propertyLen = 0;
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(this.msg.reasonString);
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8StringPair(this.msg.userProperty);
+        if (this.msg.properties) {
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(this.msg.properties.reasonString);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8StringPair(this.msg.properties.userProperty);
+        }
 
         return propertyLen;
     }
 
     encodeProperties(enc: DataStreamEncoder, propertyLen: number): void | never {
         enc.encodeVarUint32(propertyLen);
-        PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ReasonStringID, this.msg.reasonString);
-        PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, this.msg.userProperty);
+        if (this.msg.properties) {
+            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ReasonStringID, this.msg.properties.reasonString);
+            PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, this.msg.properties.userProperty);
+        }
     }
 
     hasProperties(): boolean {
-        return (this.msg.reasonString ? true : false);
+        return (this.msg.properties ? true : false);
     }
 
     build(): Uint8Array | never {
@@ -60,6 +68,6 @@ export class MQTTPubRelPacket extends PublishResponsePacket {
 export function decodePubRelPacket(byte0: number, dec: DataStreamDecoder): {pktID: number, pubrel: MQTTPubRel} {
     const {pktID, result} = decodeMQTTPublishResponse(byte0, dec);
     return {
-        pktID: pktID, pubrel: {reason: result.reasonCode, reasonString: result.reasonString, userProperty: result.userProperty}
+        pktID: pktID, pubrel: {reason: result.reasonCode, properties: {reasonString: result.reasonString, userProperty: result.userProperty}}
     };
 }

@@ -52,7 +52,7 @@ describe('MQTT PUBLISH basic test', () => {
 
         const topic = "a/b";
         const payload = "Welcome!";
-        const pub: MQTTPublish = {dup: true, qos: 2, retain: true, topic: topic, topicAlias: topicAliasID, payload: payload};
+        const pub: MQTTPublish = {dup: true, qos: 2, retain: true, topic: topic, properties: {topicAlias: topicAliasID}, payload: payload};
         expect(new PublishPacket(identifer, pub).build()).to.eql(encoded);
 
         const decoder = new DataStreamDecoder(encoded.buffer.slice(2));
@@ -61,7 +61,7 @@ describe('MQTT PUBLISH basic test', () => {
         expect(result.qos).to.eql(2);
         expect(result.dup).to.true;
         expect(result.retain).to.true;
-        expect(result.topicAlias).to.eql(topicAliasID);
+        expect(result.properties!.topicAlias).to.eql(topicAliasID);
         expect(result.topic).to.eql(topic);
         expect(getPayloadAsString(result.payload)).to.eql(payload);
     });
@@ -107,7 +107,7 @@ describe('MQTT PUBLISH basic test', () => {
 
         const topic = "a/b";
         const payload = "Welcome!";
-        const pub: MQTTPublish = {retain: true, topic: topic, topicAlias: topicAliasID, payload: payload};
+        const pub: MQTTPublish = {retain: true, topic: topic, properties: {topicAlias: topicAliasID}, payload: payload};
         expect(new PublishPacket(18, pub).build()).to.eql(encoded);
     });
 
@@ -134,7 +134,7 @@ describe('MQTT PUBLISH basic test', () => {
         ]);
         const topic = "a/b";
         const payload = "Welcome!";
-        const pub: MQTTPublish = {retain: true, topic: topic, payload: payload, userProperty: userProperty};
+        const pub: MQTTPublish = {retain: true, topic: topic, payload: payload, properties: {userProperty: userProperty}};
         expect(new PublishPacket(18, pub).build()).to.eql(encoded);
     });
 

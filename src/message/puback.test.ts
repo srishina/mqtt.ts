@@ -45,7 +45,7 @@ describe('MQTT PUBACK test', () => {
             ...reasonBytes
         ]);
 
-        const pubrel = new MQTTPubAckPacket(id, {reason: MQTTPubAckReason.Code.Success, reasonString: reasonString});
+        const pubrel = new MQTTPubAckPacket(id, {reason: MQTTPubAckReason.Code.Success, properties: {reasonString: reasonString}});
         expect(pubrel.build()).to.eql(encoded);
     });
 });

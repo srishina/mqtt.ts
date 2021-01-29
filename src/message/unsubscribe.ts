@@ -3,9 +3,13 @@ import {PacketType, PropertyID, MQTTCommonReasonCode, getCommonReasonCodeName} f
 import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, DataStreamDecoder, PropertyDecoderOnlyOnce} from "../utils/codec";
 import {DecoderError} from "../client/errors";
 
+export type MQTTUnsubscribeProperties = {
+    userProperty?: Map<string, string>;
+}
+
 export type MQTTUnsubscribe = {
     topicFilters: string[];
-    userProperty?: Map<string, string>;
+    properties?: MQTTUnsubscribeProperties;
 };
 
 export class UnsubscribePacket extends PacketWithID {
@@ -17,12 +21,14 @@ export class UnsubscribePacket extends PacketWithID {
     }
 
     propertyLength(): number {
-        return PropertySizeIfNotEmpty.fromUTF8StringPair(this.msg.userProperty);
+        return this.msg.properties ? PropertySizeIfNotEmpty.fromUTF8StringPair(this.msg.properties.userProperty) : 0;
     }
 
     encodeProperties(enc: DataStreamEncoder, propertyLen: number): void | never {
         enc.encodeVarUint32(propertyLen);
-        PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, this.msg.userProperty);
+        if (this.msg.properties) {
+            PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, this.msg.properties.userProperty);
+        }
     }
 
     build(): Uint8Array | never {
@@ -54,19 +60,23 @@ export class UnsubscribePacket extends PacketWithID {
 export function decodeUnsubscribePacket(dec: DataStreamDecoder): {pktID: number, result: MQTTUnsubscribe} | never {
     const pktID = dec.decodeUint16();
 
-    const result: MQTTUnsubscribe = {topicFilters: []};
+    const data: MQTTUnsubscribe = {topicFilters: []};
     // decode properties
     let propertyLen = dec.decodeVarUint32();
-    while (propertyLen > 0) {
+    if (propertyLen > 0) {
+        data.properties = {};
+    }
+
+    while (propertyLen > 0 && data.properties) {
         const id = dec.decodeVarUint32();
         propertyLen--;
         switch (id) {
             case PropertyID.UserPropertyID: {
-                if (!result.userProperty) {
-                    result.userProperty = new Map<string, string>();
+                if (!data.properties.userProperty) {
+                    data.properties.userProperty = new Map<string, string>();
                 }
                 const {key, value} = dec.decodeUTF8StringPair();
-                result.userProperty.set(key, value);
+                data.properties.userProperty.set(key, value);
                 propertyLen -= (key.length + value.length + 4);
                 break;
             }
@@ -76,14 +86,14 @@ export function decodeUnsubscribePacket(dec: DataStreamDecoder): {pktID: number,
     }
 
     while (dec.remainingLength() > 0) {
-        result.topicFilters.push(dec.decodeUTF8String());
+        data.topicFilters.push(dec.decodeUTF8String());
     }
 
-    if (result.topicFilters.length == 0) {
+    if (data.topicFilters.length == 0) {
         throw new Error("Subscription payload MUST contain atleast a topic - protocol error");
     }
 
-    return {pktID: pktID, result: result};
+    return {pktID: pktID, result: data};
 }
 
 export namespace MQTTUnsubAckReason {

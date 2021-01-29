@@ -9,7 +9,7 @@ if (typeof window === 'undefined') {
     WebSocket = global.WebSocket;
 }
 
-import {decodePublishPacket, getPayloadAsString, PublishPacket} from "../message/publish";
+import {decodePublishPacket, PublishPacket} from "../message/publish";
 import {decodePubAckPacket, MQTTPubAckPacket, MQTTPubAckReason} from "../message/puback";
 import {decodePubRecPacket, MQTTPubRecPacket, MQTTPubRecReason} from "../message/pubrec";
 import {decodePubRelPacket, MQTTPubRelPacket, MQTTPubRelReason} from "../message/pubrel";
@@ -324,15 +324,15 @@ export class ProtocolHandler implements PingerCallback {
                     clearTimeout(timer);
                     resolve(connack);
                     this.connected = true;
-                    if (connack.serverKeepAlive) {
-                        this.pinger = new Pinger(connack.serverKeepAlive, this);
+                    if (connack.properties && connack.properties.serverKeepAlive) {
+                        this.pinger = new Pinger(connack.properties.serverKeepAlive, this);
                     }
                     else {
                         this.pinger = new Pinger(this.connectParams.keepAlive, this);
                     }
 
-                    if (connack.receiveMaximum) {
-                        this.sendQoS12Quota = connack.receiveMaximum;
+                    if (connack.properties && connack.properties.receiveMaximum) {
+                        this.sendQoS12Quota = connack.properties.receiveMaximum;
                     }
 
                 }).catch(
@@ -370,11 +370,11 @@ export class ProtocolHandler implements PingerCallback {
         outgoingRequestsCopy.forEach((v) => {
             if (v instanceof PublishPacket) {
                 const isPublish = v as PublishPacket;
-                if (isPublish.msg.topicAlias && isPublish.msg.topic.length == 0) {
-                    const topic = this.clientTopicAliasMapping.get(isPublish.msg.topicAlias);
+                if (isPublish.msg.properties && isPublish.msg.properties.topicAlias && isPublish.msg.topic.length == 0) {
+                    const topic = this.clientTopicAliasMapping.get(isPublish.msg.properties.topicAlias);
                     if (topic && !mappedAliases.has(topic)) {
                         isPublish.msg.topic = topic;
-                        mappedAliases.set(topic, isPublish.msg.topicAlias!);
+                        mappedAliases.set(topic, isPublish.msg.properties.topicAlias!);
                     }
                 }
                 isPublish.msg.dup = true;
@@ -487,17 +487,22 @@ export class ProtocolHandler implements PingerCallback {
                 throw new Error("Publish topic is invalid");
             }
 
-            if (!msg.topicAlias && msg.topic.length == 0) {
+            let topicAlias: number | undefined = undefined;
+            if (msg.properties && msg.properties.topicAlias) {
+                topicAlias = msg.properties.topicAlias;
+            }
+
+            if (!topicAlias && msg.topic.length == 0) {
                 throw new Error("Publish topic is invalid");
             }
 
             // check if topic alias has been set
-            if (msg.topicAlias && msg.topic.length > 0) {
-                this.clientTopicAliasMapping.set(msg.topicAlias, msg.topic);
+            if (topicAlias && msg.topic.length > 0) {
+                this.clientTopicAliasMapping.set(topicAlias, msg.topic);
             }
 
             // delete topic alias if the client has reset
-            if (msg.topic.length > 0 && !msg.topicAlias) {
+            if (msg.topic.length > 0 && !topicAlias) {
                 const topicAliasPair = [...this.clientTopicAliasMapping].find(([_, value]) => value == msg.topic);
                 if (topicAliasPair) {
                     this.clientTopicAliasMapping.delete(topicAliasPair[0]);
@@ -642,8 +647,8 @@ export class ProtocolHandler implements PingerCallback {
         switch (ptype) {
             case PacketType.CONNACK: {
                 const connAck = decodeConnAckPacket(decoder);
-                if (connAck.assignedClientIdentifier && this.clientID.length == 0) {
-                    this.clientID = connAck.assignedClientIdentifier;
+                if (connAck.properties && connAck.properties.assignedClientIdentifier && this.clientID.length == 0) {
+                    this.clientID = connAck.properties.assignedClientIdentifier;
                 }
                 if (this.connectingPromise) {
                     this.connectingPromise.resolve(connAck);

@@ -116,35 +116,42 @@ export namespace MQTTDisconnectReason {
     ]);
 }
 
-export type MQTTDisconnect = {
-    reasonCode: MQTTDisconnectReason.Code;
+export type MQTTDisconnectProperties = {
     sessionExpiryInterval?: number;
     reasonString?: string
     userProperty?: Map<string, string>;
     serverReference?: string;
 }
 
+export type MQTTDisconnect = {
+    reasonCode: MQTTDisconnectReason.Code;
+    properties?: MQTTDisconnectProperties;
+}
+
 export function encodeDisconnectPacket(msg: MQTTDisconnect): Uint8Array | never {
     function propertyLength(): number {
         let propertyLen = 0;
-        propertyLen += PropertySizeIfNotEmpty.fromUint32(msg.sessionExpiryInterval);
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.reasonString);
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8StringPair(msg.userProperty);
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.serverReference);
-
+        if (msg.properties) {
+            propertyLen += PropertySizeIfNotEmpty.fromUint32(msg.properties.sessionExpiryInterval);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.properties.reasonString);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8StringPair(msg.properties.userProperty);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.properties.serverReference);
+        }
         return propertyLen;
     }
 
     function encodeProperties(enc: DataStreamEncoder, propertyLen: number): void | never {
         enc.encodeVarUint32(propertyLen);
-        PropertyEncoderIfNotEmpty.fromUint32(enc, PropertyID.SessionExpiryIntervalID, msg.sessionExpiryInterval);
-        PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ReasonStringID, msg.reasonString);
-        PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, msg.userProperty);
-        PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ServerReferenceID, msg.serverReference);
+        if (msg.properties) {
+            PropertyEncoderIfNotEmpty.fromUint32(enc, PropertyID.SessionExpiryIntervalID, msg.properties.sessionExpiryInterval);
+            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ReasonStringID, msg.properties.reasonString);
+            PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, msg.properties.userProperty);
+            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ServerReferenceID, msg.properties.serverReference);
+        }
     }
 
     function hasProperties(): boolean {
-        return ((msg.reasonString || msg.sessionExpiryInterval || msg.userProperty || msg.serverReference) ? true : false);
+        return ((msg.properties) ? true : false);
     }
 
     const propertyLen = propertyLength();
@@ -175,31 +182,35 @@ export function decodeDisconnectPacket(dec: DataStreamDecoder): MQTTDisconnect {
     const data: MQTTDisconnect = {reasonCode: dec.decodeByte()};
     // read the properties
     let propertyLen = dec.decodeVarUint32();
-    while (propertyLen > 0) {
+    if (propertyLen > 0) {
+        data.properties = {};
+    }
+
+    while (propertyLen > 0 && data.properties) {
         const id = dec.decodeVarUint32();
         propertyLen--;
         switch (id) {
             case PropertyID.SessionExpiryIntervalID:
-                data.sessionExpiryInterval = PropertyDecoderOnlyOnce.toUint32(dec, id, data.sessionExpiryInterval);
+                data.properties.sessionExpiryInterval = PropertyDecoderOnlyOnce.toUint32(dec, id, data.properties.sessionExpiryInterval);
                 propertyLen -= 4;
                 break;
             case PropertyID.ReasonStringID: {
-                data.reasonString = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.reasonString);
-                propertyLen -= (data.reasonString.length + 2);
+                data.properties.reasonString = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.properties.reasonString);
+                propertyLen -= (data.properties.reasonString.length + 2);
                 break;
             }
             case PropertyID.UserPropertyID: {
-                if (!data.userProperty) {
-                    data.userProperty = new Map<string, string>();
+                if (!data.properties.userProperty) {
+                    data.properties.userProperty = new Map<string, string>();
                 }
                 const {key, value} = dec.decodeUTF8StringPair();
-                data.userProperty.set(key, value);
+                data.properties.userProperty.set(key, value);
                 propertyLen -= (key.length + value.length + 4);
                 break;
             }
             case PropertyID.ServerReferenceID:
-                data.serverReference = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.serverReference);
-                propertyLen -= (data.serverReference.length + 2);
+                data.properties.serverReference = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.properties.serverReference);
+                propertyLen -= (data.properties.serverReference.length + 2);
                 break;
             default:
                 throw new DecoderError("DISCONNECT: wrong property with identifier " + id);

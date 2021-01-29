@@ -32,7 +32,7 @@ describe('MQTT PUBCOMP test', () => {
             ...reasonBytes
         ]);
 
-        const pubcomp = new MQTTPubCompPacket(id, {reason: MQTTPubCompReason.Code.Success, reasonString: reasonString});
+        const pubcomp = new MQTTPubCompPacket(id, {reason: MQTTPubCompReason.Code.Success, properties: {reasonString: reasonString}});
         expect(pubcomp.build()).to.eql(encoded);
     });
 });

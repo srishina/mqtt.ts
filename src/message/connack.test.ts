@@ -17,7 +17,8 @@ describe('MQTT CONNACK packet tests', () => {
         const connAck = decodeConnAckPacket(decoder);
         expect(connAck.sessionPresent).to.true;
         expect(connAck.reasonCode).to.eql(MQTTConnAckReason.Code.NotAuthorized);
-        expect(connAck.sessionExpiryInterval).to.eql(10);
+        expect(connAck.properties).to.not.be.undefined;
+        expect(connAck.properties!.sessionExpiryInterval).to.eql(10);
     });
 
     it('CONNACK invalid packet test - property included more than once', () => {

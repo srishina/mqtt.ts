@@ -79,10 +79,7 @@ export namespace MQTTConnAckReason {
     ]);
 }
 
-export type MQTTConnAck = {
-    sessionPresent: boolean;
-    reasonCode: MQTTConnAckReason.Code;
-
+export type MQTTConnAckProperties = {
     sessionExpiryInterval?: number;
     receiveMaximum?: number;
     maximumQoS?: number;
@@ -106,52 +103,61 @@ export type MQTTConnAck = {
     serverReference?: string;
     authenticationMethod?: string;
     authenticationData?: Uint8Array;
+}
 
+export type MQTTConnAck = {
+    sessionPresent: boolean;
+    reasonCode: MQTTConnAckReason.Code;
+
+    properties?: MQTTConnAckProperties
 }
 
 export function encodeConnAckPacket(msg: MQTTConnAck): Uint8Array | never {
     function propertyLength(): number {
         let propertyLen = 0;
-        propertyLen += PropertySizeIfNotEmpty.fromUint32(msg.sessionExpiryInterval);
-        propertyLen += PropertySizeIfNotEmpty.fromUint16(msg.receiveMaximum);
-        propertyLen += PropertySizeIfNotEmpty.fromByte(msg.maximumQoS);
-        propertyLen += PropertySizeIfNotEmpty.fromBool(msg.retainAvailable);
-        propertyLen += PropertySizeIfNotEmpty.fromUint32(msg.maximumPacketSize);
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.assignedClientIdentifier);
-        propertyLen += PropertySizeIfNotEmpty.fromUint16(msg.topicAliasMaximum);
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.reasonString);
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8StringPair(msg.userProperty);
-        propertyLen += PropertySizeIfNotEmpty.fromBool(msg.wildcardSubscriptionAvailable);
-        propertyLen += PropertySizeIfNotEmpty.fromBool(msg.subscriptionIdentifierAvailable);
-        propertyLen += PropertySizeIfNotEmpty.fromBool(msg.sharedSubscriptionAvailable);
-        propertyLen += PropertySizeIfNotEmpty.fromByte(msg.serverKeepAlive);
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.responseInformation);
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.serverReference);
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.authenticationMethod);
-        propertyLen += PropertySizeIfNotEmpty.fromBinaryData(msg.authenticationData);
+        if (msg.properties) {
+            propertyLen += PropertySizeIfNotEmpty.fromUint32(msg.properties.sessionExpiryInterval);
+            propertyLen += PropertySizeIfNotEmpty.fromUint16(msg.properties.receiveMaximum);
+            propertyLen += PropertySizeIfNotEmpty.fromByte(msg.properties.maximumQoS);
+            propertyLen += PropertySizeIfNotEmpty.fromBool(msg.properties.retainAvailable);
+            propertyLen += PropertySizeIfNotEmpty.fromUint32(msg.properties.maximumPacketSize);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.properties.assignedClientIdentifier);
+            propertyLen += PropertySizeIfNotEmpty.fromUint16(msg.properties.topicAliasMaximum);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.properties.reasonString);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8StringPair(msg.properties.userProperty);
+            propertyLen += PropertySizeIfNotEmpty.fromBool(msg.properties.wildcardSubscriptionAvailable);
+            propertyLen += PropertySizeIfNotEmpty.fromBool(msg.properties.subscriptionIdentifierAvailable);
+            propertyLen += PropertySizeIfNotEmpty.fromBool(msg.properties.sharedSubscriptionAvailable);
+            propertyLen += PropertySizeIfNotEmpty.fromByte(msg.properties.serverKeepAlive);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.properties.responseInformation);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.properties.serverReference);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.properties.authenticationMethod);
+            propertyLen += PropertySizeIfNotEmpty.fromBinaryData(msg.properties.authenticationData);
+        }
         return propertyLen;
     }
 
     function encodeProperties(enc: DataStreamEncoder, propertyLen: number): void | never {
         enc.encodeVarUint32(propertyLen);
-
-        PropertyEncoderIfNotEmpty.fromUint32(enc, PropertyID.SessionExpiryIntervalID, msg.sessionExpiryInterval);
-        PropertyEncoderIfNotEmpty.fromUint16(enc, PropertyID.ReceiveMaximumID, msg.receiveMaximum);
-        PropertyEncoderIfNotEmpty.fromByte(enc, PropertyID.MaximumQoSID, msg.maximumQoS);
-        PropertyEncoderIfNotEmpty.fromBool(enc, PropertyID.RetainAvailableID, msg.retainAvailable);
-        PropertyEncoderIfNotEmpty.fromUint32(enc, PropertyID.MaximumPacketSizeID, msg.maximumPacketSize);
-        PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.AssignedClientIdentifierID, msg.assignedClientIdentifier);
-        PropertyEncoderIfNotEmpty.fromUint16(enc, PropertyID.TopicAliasMaximumID, msg.topicAliasMaximum);
-        PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ReasonStringID, msg.reasonString);
-        PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, msg.userProperty);
-        PropertyEncoderIfNotEmpty.fromBool(enc, PropertyID.WildcardSubscriptionAvailableID, msg.wildcardSubscriptionAvailable);
-        PropertyEncoderIfNotEmpty.fromBool(enc, PropertyID.SubscriptionIdentifierAvailableID, msg.subscriptionIdentifierAvailable);
-        PropertyEncoderIfNotEmpty.fromBool(enc, PropertyID.SharedSubscriptionAvailableID, msg.sharedSubscriptionAvailable);
-        PropertyEncoderIfNotEmpty.fromByte(enc, PropertyID.ServerKeepAliveID, msg.serverKeepAlive);
-        PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ResponseInformationID, msg.responseInformation);
-        PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ServerReferenceID, msg.serverReference);
-        PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.AuthenticationMethodID, msg.authenticationMethod);
-        PropertyEncoderIfNotEmpty.fromBinaryData(enc, PropertyID.AuthenticationDataID, msg.authenticationData);
+        if (msg.properties) {
+            PropertyEncoderIfNotEmpty.fromUint32(enc, PropertyID.SessionExpiryIntervalID, msg.properties.sessionExpiryInterval);
+            PropertyEncoderIfNotEmpty.fromUint16(enc, PropertyID.ReceiveMaximumID, msg.properties.receiveMaximum);
+            PropertyEncoderIfNotEmpty.fromByte(enc, PropertyID.MaximumQoSID, msg.properties.maximumQoS);
+            PropertyEncoderIfNotEmpty.fromBool(enc, PropertyID.RetainAvailableID, msg.properties.retainAvailable);
+            PropertyEncoderIfNotEmpty.fromUint32(enc, PropertyID.MaximumPacketSizeID, msg.properties.maximumPacketSize);
+            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.AssignedClientIdentifierID, msg.properties.assignedClientIdentifier);
+            PropertyEncoderIfNotEmpty.fromUint16(enc, PropertyID.TopicAliasMaximumID, msg.properties.topicAliasMaximum);
+            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ReasonStringID, msg.properties.reasonString);
+            PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, msg.properties.userProperty);
+            PropertyEncoderIfNotEmpty.fromBool(enc, PropertyID.WildcardSubscriptionAvailableID, msg.properties.wildcardSubscriptionAvailable);
+            PropertyEncoderIfNotEmpty.fromBool(enc, PropertyID.SubscriptionIdentifierAvailableID, msg.properties.subscriptionIdentifierAvailable);
+            PropertyEncoderIfNotEmpty.fromBool(enc, PropertyID.SharedSubscriptionAvailableID, msg.properties.sharedSubscriptionAvailable);
+            PropertyEncoderIfNotEmpty.fromByte(enc, PropertyID.ServerKeepAliveID, msg.properties.serverKeepAlive);
+            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ResponseInformationID, msg.properties.responseInformation);
+            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ServerReferenceID, msg.properties.serverReference);
+            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.AuthenticationMethodID, msg.properties.authenticationMethod);
+            PropertyEncoderIfNotEmpty.fromBinaryData(enc, PropertyID.AuthenticationDataID, msg.properties.authenticationData);
+        }
     }
 
     const propertyLen = propertyLength();
@@ -189,19 +195,23 @@ export function decodeConnAckPacket(dec: DataStreamDecoder): MQTTConnAck {
 
     // read the properties
     let propertyLen = dec.decodeVarUint32();
-    while (propertyLen > 0) {
+    if (propertyLen > 0) {
+        data.properties = {};
+    }
+
+    while (propertyLen > 0 && data.properties) {
         const id = dec.decodeVarUint32();
         propertyLen--;
         switch (id) {
             case PropertyID.SessionExpiryIntervalID: {
-                data.sessionExpiryInterval = PropertyDecoderOnlyOnce.toUint32(dec, id, data.sessionExpiryInterval);
+                data.properties.sessionExpiryInterval = PropertyDecoderOnlyOnce.toUint32(dec, id, data.properties.sessionExpiryInterval);
                 propertyLen -= 4;
                 break;
             }
 
             case PropertyID.ReceiveMaximumID: {
-                data.receiveMaximum = PropertyDecoderOnlyOnce.toUint16(dec, id, data.receiveMaximum);
-                if (data.receiveMaximum == 0) {
+                data.properties.receiveMaximum = PropertyDecoderOnlyOnce.toUint16(dec, id, data.properties.receiveMaximum);
+                if (data.properties.receiveMaximum == 0) {
                     throw new Error(getPropertyText(id) + " must not be 0");
                 }
                 propertyLen -= 2;
@@ -209,8 +219,8 @@ export function decodeConnAckPacket(dec: DataStreamDecoder): MQTTConnAck {
             }
 
             case PropertyID.MaximumQoSID: {
-                data.maximumQoS = PropertyDecoderOnlyOnce.toByte(dec, id, data.maximumQoS);
-                if (data.maximumQoS != 0 && data.maximumQoS != 1) {
+                data.properties.maximumQoS = PropertyDecoderOnlyOnce.toByte(dec, id, data.properties.maximumQoS);
+                if (data.properties.maximumQoS != 0 && data.properties.maximumQoS != 1) {
                     throw new Error(getPropertyText(id) + " wrong maximum Qos");
                 }
                 propertyLen--;
@@ -218,14 +228,14 @@ export function decodeConnAckPacket(dec: DataStreamDecoder): MQTTConnAck {
             }
 
             case PropertyID.RetainAvailableID: {
-                data.retainAvailable = PropertyDecoderOnlyOnce.toBool(dec, id, data.retainAvailable);
+                data.properties.retainAvailable = PropertyDecoderOnlyOnce.toBool(dec, id, data.properties.retainAvailable);
                 propertyLen--;
                 break;
             }
 
             case PropertyID.MaximumPacketSizeID: {
-                data.maximumPacketSize = PropertyDecoderOnlyOnce.toUint32(dec, id, data.maximumPacketSize);
-                if (data.maximumPacketSize == 0) {
+                data.properties.maximumPacketSize = PropertyDecoderOnlyOnce.toUint32(dec, id, data.properties.maximumPacketSize);
+                if (data.properties.maximumPacketSize == 0) {
                     throw new Error(getPropertyText(id) + " must not be 0");
                 }
 
@@ -234,78 +244,78 @@ export function decodeConnAckPacket(dec: DataStreamDecoder): MQTTConnAck {
             }
 
             case PropertyID.AssignedClientIdentifierID: {
-                data.assignedClientIdentifier = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.assignedClientIdentifier);
-                propertyLen -= (data.assignedClientIdentifier.length + 2);
+                data.properties.assignedClientIdentifier = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.properties.assignedClientIdentifier);
+                propertyLen -= (data.properties.assignedClientIdentifier.length + 2);
                 break;
             }
 
             case PropertyID.TopicAliasMaximumID: {
-                data.topicAliasMaximum = PropertyDecoderOnlyOnce.toUint16(dec, id, data.topicAliasMaximum);
+                data.properties.topicAliasMaximum = PropertyDecoderOnlyOnce.toUint16(dec, id, data.properties.topicAliasMaximum);
                 propertyLen -= 2;
                 break;
             }
 
             case PropertyID.ReasonStringID: {
-                data.reasonString = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.reasonString);
-                propertyLen -= (data.reasonString.length + 2);
+                data.properties.reasonString = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.properties.reasonString);
+                propertyLen -= (data.properties.reasonString.length + 2);
                 break;
             }
 
             case PropertyID.UserPropertyID: {
-                if (!data.userProperty) {
-                    data.userProperty = new Map<string, string>();
+                if (!data.properties.userProperty) {
+                    data.properties.userProperty = new Map<string, string>();
                 }
                 const {key, value} = dec.decodeUTF8StringPair();
-                data.userProperty.set(key, value);
+                data.properties.userProperty.set(key, value);
                 propertyLen -= (key.length + value.length + 4);
                 break;
             }
 
             case PropertyID.WildcardSubscriptionAvailableID: {
-                data.wildcardSubscriptionAvailable = PropertyDecoderOnlyOnce.toBool(dec, id, data.wildcardSubscriptionAvailable);
+                data.properties.wildcardSubscriptionAvailable = PropertyDecoderOnlyOnce.toBool(dec, id, data.properties.wildcardSubscriptionAvailable);
                 propertyLen--;
                 break;
             }
 
             case PropertyID.SubscriptionIdentifierAvailableID: {
-                data.subscriptionIdentifierAvailable = PropertyDecoderOnlyOnce.toBool(dec, id, data.subscriptionIdentifierAvailable);
+                data.properties.subscriptionIdentifierAvailable = PropertyDecoderOnlyOnce.toBool(dec, id, data.properties.subscriptionIdentifierAvailable);
                 propertyLen--;
                 break;
             }
 
             case PropertyID.SharedSubscriptionAvailableID: {
-                data.sharedSubscriptionAvailable = PropertyDecoderOnlyOnce.toBool(dec, id, data.sharedSubscriptionAvailable);
+                data.properties.sharedSubscriptionAvailable = PropertyDecoderOnlyOnce.toBool(dec, id, data.properties.sharedSubscriptionAvailable);
                 propertyLen--;
                 break;
             }
 
             case PropertyID.ServerKeepAliveID: {
-                data.serverKeepAlive = PropertyDecoderOnlyOnce.toUint16(dec, id, data.serverKeepAlive);
+                data.properties.serverKeepAlive = PropertyDecoderOnlyOnce.toUint16(dec, id, data.properties.serverKeepAlive);
                 propertyLen -= 2;
                 break;
             }
 
             case PropertyID.ResponseInformationID: {
-                data.responseInformation = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.responseInformation);
-                propertyLen -= (data.responseInformation.length + 2);
+                data.properties.responseInformation = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.properties.responseInformation);
+                propertyLen -= (data.properties.responseInformation.length + 2);
                 break;
             }
 
             case PropertyID.ServerReferenceID: {
-                data.serverReference = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.serverReference);
-                propertyLen -= (data.serverReference.length + 2);
+                data.properties.serverReference = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.properties.serverReference);
+                propertyLen -= (data.properties.serverReference.length + 2);
                 break;
             }
 
             case PropertyID.AuthenticationMethodID: {
-                data.authenticationMethod = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.authenticationMethod);
-                propertyLen -= (data.authenticationMethod.length + 2);
+                data.properties.authenticationMethod = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.properties.authenticationMethod);
+                propertyLen -= (data.properties.authenticationMethod.length + 2);
                 break;
             }
 
             case PropertyID.AuthenticationDataID: {
-                data.authenticationData = PropertyDecoderOnlyOnce.toBinaryData(dec, id, data.authenticationData);
-                propertyLen -= (data.authenticationData.length + 2);
+                data.properties.authenticationData = PropertyDecoderOnlyOnce.toBinaryData(dec, id, data.properties.authenticationData);
+                propertyLen -= (data.properties.authenticationData.length + 2);
                 break;
             }
             default:

@@ -46,7 +46,7 @@ describe('MQTT SUBSCRIBE data model tests', () => {
         // with QoS 1
         const s: MQTTSubscription = {topicFilter: topicFilters[0], qos: 1};
 
-        const subscribe: MQTTSubscribe = {subscriptions: [s], subscriptionIdentifer: 10};
+        const subscribe: MQTTSubscribe = {subscriptions: [s], properties: {subscriptionIdentifer: 10}};
         const subscBuf = new SubscribePacket(18, subscribe);
         expect(subscBuf.build()).to.eql(encoded);
     });

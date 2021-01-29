@@ -19,13 +19,7 @@ export function getPayloadAsString(payload: Uint8Array | string): string {
     return utf8Dec.decode(payload);
 }
 
-export type MQTTPublish = {
-    topic: string;
-    qos?: number;
-    retain?: boolean;
-    dup?: boolean;
-    payload: Uint8Array | string;
-
+export type MQTTPublishProperties = {
     payloadFormatIndicator?: number;
     messageExpiryInterval?: number;
     topicAlias?: number;
@@ -34,6 +28,16 @@ export type MQTTPublish = {
     correlationData?: Uint8Array;
     userProperty?: Map<string, string>;
     subscriptionIdentifiers?: number[];
+}
+
+export type MQTTPublish = {
+    topic: string;
+    qos?: number;
+    retain?: boolean;
+    dup?: boolean;
+    payload: Uint8Array | string;
+
+    properties?: MQTTPublishProperties;
 };
 
 function validateFlags(msg: MQTTPublish): void | never {
@@ -46,7 +50,6 @@ function validateFlags(msg: MQTTPublish): void | never {
     }
 }
 
-
 export class PublishPacket extends PacketWithID {
     public msg: MQTTPublish;
 
@@ -57,28 +60,32 @@ export class PublishPacket extends PacketWithID {
 
     propertyLength(): number {
         let propertyLen = 0;
-        propertyLen += PropertySizeIfNotEmpty.fromByte(this.msg.payloadFormatIndicator);
-        propertyLen += PropertySizeIfNotEmpty.fromUint32(this.msg.messageExpiryInterval);
-        propertyLen += PropertySizeIfNotEmpty.fromUint16(this.msg.topicAlias);
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(this.msg.contentType);
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(this.msg.responseTopic);
-        propertyLen += PropertySizeIfNotEmpty.fromBinaryData(this.msg.correlationData);
-        propertyLen += PropertySizeIfNotEmpty.fromUTF8StringPair(this.msg.userProperty);
-        propertyLen += PropertySizeIfNotEmpty.fromVarUint32Array(this.msg.subscriptionIdentifiers);
+        if (this.msg.properties) {
+            propertyLen += PropertySizeIfNotEmpty.fromByte(this.msg.properties.payloadFormatIndicator);
+            propertyLen += PropertySizeIfNotEmpty.fromUint32(this.msg.properties.messageExpiryInterval);
+            propertyLen += PropertySizeIfNotEmpty.fromUint16(this.msg.properties.topicAlias);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(this.msg.properties.contentType);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(this.msg.properties.responseTopic);
+            propertyLen += PropertySizeIfNotEmpty.fromBinaryData(this.msg.properties.correlationData);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8StringPair(this.msg.properties.userProperty);
+            propertyLen += PropertySizeIfNotEmpty.fromVarUint32Array(this.msg.properties.subscriptionIdentifiers);
+        }
 
         return propertyLen;
     }
 
     encodeProperties(enc: DataStreamEncoder, propertyLen: number): void | never {
         enc.encodeVarUint32(propertyLen);
-        PropertyEncoderIfNotEmpty.fromByte(enc, PropertyID.PayloadFormatIndicatorID, this.msg.payloadFormatIndicator);
-        PropertyEncoderIfNotEmpty.fromUint32(enc, PropertyID.MessageExpiryIntervalID, this.msg.messageExpiryInterval);
-        PropertyEncoderIfNotEmpty.fromUint16(enc, PropertyID.TopicAliasID, this.msg.topicAlias);
-        PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ContentTypeID, this.msg.contentType);
-        PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ResponseTopicID, this.msg.responseTopic);
-        PropertyEncoderIfNotEmpty.fromBinaryData(enc, PropertyID.CorrelationDataID, this.msg.correlationData);
-        PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, this.msg.userProperty);
-        PropertyEncoderIfNotEmpty.fromVarUint32Array(enc, PropertyID.SubscriptionIdentifierID, this.msg.subscriptionIdentifiers);
+        if (this.msg.properties) {
+            PropertyEncoderIfNotEmpty.fromByte(enc, PropertyID.PayloadFormatIndicatorID, this.msg.properties.payloadFormatIndicator);
+            PropertyEncoderIfNotEmpty.fromUint32(enc, PropertyID.MessageExpiryIntervalID, this.msg.properties.messageExpiryInterval);
+            PropertyEncoderIfNotEmpty.fromUint16(enc, PropertyID.TopicAliasID, this.msg.properties.topicAlias);
+            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ContentTypeID, this.msg.properties.contentType);
+            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ResponseTopicID, this.msg.properties.responseTopic);
+            PropertyEncoderIfNotEmpty.fromBinaryData(enc, PropertyID.CorrelationDataID, this.msg.properties.correlationData);
+            PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, this.msg.properties.userProperty);
+            PropertyEncoderIfNotEmpty.fromVarUint32Array(enc, PropertyID.SubscriptionIdentifierID, this.msg.properties.subscriptionIdentifiers);
+        }
     }
 
     build(): Uint8Array | never {
@@ -141,67 +148,70 @@ export function decodePublishPacket(byte0: number, dec: DataStreamDecoder): {pkt
 
     // read properties
     let propertyLen = dec.decodeVarUint32();
-    while (propertyLen > 0) {
+    if (propertyLen > 0) {
+        data.properties = {};
+    }
+    while (propertyLen > 0 && data.properties) {
         const id = dec.decodeVarUint32();
         propertyLen--;
         switch (id) {
             case PropertyID.PayloadFormatIndicatorID: {
-                data.payloadFormatIndicator = PropertyDecoderOnlyOnce.toByte(dec, id, data.payloadFormatIndicator);
+                data.properties.payloadFormatIndicator = PropertyDecoderOnlyOnce.toByte(dec, id, data.properties.payloadFormatIndicator);
                 propertyLen--;
                 break;
             }
 
             case PropertyID.MessageExpiryIntervalID: {
-                data.messageExpiryInterval = PropertyDecoderOnlyOnce.toUint32(dec, id, data.messageExpiryInterval);
+                data.properties.messageExpiryInterval = PropertyDecoderOnlyOnce.toUint32(dec, id, data.properties.messageExpiryInterval);
                 propertyLen -= 4;
                 break;
             }
 
             case PropertyID.TopicAliasID: {
-                data.topicAlias = PropertyDecoderOnlyOnce.toUint16(dec, id, data.topicAlias);
+                data.properties.topicAlias = PropertyDecoderOnlyOnce.toUint16(dec, id, data.properties.topicAlias);
                 propertyLen -= 2;
                 break;
             }
 
             case PropertyID.ResponseTopicID: {
-                data.responseTopic = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.responseTopic);
-                propertyLen -= (data.responseTopic.length + 2);
+                data.properties.responseTopic = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.properties.responseTopic);
+                propertyLen -= (data.properties.responseTopic.length + 2);
                 break;
             }
 
             case PropertyID.CorrelationDataID: {
-                data.correlationData = PropertyDecoderOnlyOnce.toBinaryData(dec, id, data.correlationData);
-                propertyLen -= (data.correlationData.length + 2);
+                data.properties.correlationData = PropertyDecoderOnlyOnce.toBinaryData(dec, id, data.properties.correlationData);
+                propertyLen -= (data.properties.correlationData.length + 2);
                 break;
             }
 
             case PropertyID.UserPropertyID: {
-                if (!data.userProperty) {
-                    data.userProperty = new Map<string, string>();
+                if (!data.properties.userProperty) {
+                    data.properties.userProperty = new Map<string, string>();
                 }
                 const {key, value} = dec.decodeUTF8StringPair();
-                data.userProperty.set(key, value);
+                data.properties.userProperty.set(key, value);
                 propertyLen -= (key.length + value.length + 4);
                 break;
             }
 
             case PropertyID.SubscriptionIdentifierID: {
-                if (!data.subscriptionIdentifiers) {
-                    data.subscriptionIdentifiers = [];
+                if (!data.properties.subscriptionIdentifiers) {
+                    data.properties.subscriptionIdentifiers = [];
                 }
                 const v = dec.decodeVarUint32();
                 if (v == 0) {
                     throw new Error(getPropertyText(id) + " must not be 0");
                 }
 
-                data.subscriptionIdentifiers.push(v);
+                data.properties.subscriptionIdentifiers.push(v);
                 propertyLen -= encodedVarUint32Size(v);
                 break;
             }
 
             case PropertyID.ContentTypeID: {
-                data.contentType = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.contentType);
-                propertyLen -= (data.contentType.length + 2);
+                data.properties.contentType = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, data.properties.contentType);
+                propertyLen -= (data.properties.contentType.length + 2);
                 break;
             }
 

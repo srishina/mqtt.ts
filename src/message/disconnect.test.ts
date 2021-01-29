@@ -13,7 +13,7 @@ describe('MQTT DISCONNECT packet tests', () => {
             0x00, 0x00, 0x00, 0x05 // session interval = 5
         ]);
 
-        const disconnBuf = encodeDisconnectPacket({reasonCode: MQTTDisconnectReason.Code.NormalDisconnection, sessionExpiryInterval: 5});
+        const disconnBuf = encodeDisconnectPacket({reasonCode: MQTTDisconnectReason.Code.NormalDisconnection, properties: {sessionExpiryInterval: 5}});
         expect(disconnBuf).to.eql(encoded);
     });
 
