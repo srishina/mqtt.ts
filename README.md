@@ -18,7 +18,7 @@ To run in browser:
 cd ./dist.browser.demo
 ```
 
-Run the index.html in brower. The UI has the possibility to connect to a broker, subscribe/publish to MQTT messages or try out MQTTv5 properties.
+Run the index.html in browser. The UI has the possibility to connect to a broker, subscribe/publish to MQTT messages or try out MQTTv5 properties.
 The demo uses bootstrap 4 and jquery as dependent components.
 
 Try out the examples:
@@ -74,7 +74,7 @@ In order to use the topic alias,
 ```
 Note: The topic alias can be changed. Before changing, it is important that, there are no pending requests with the topic alias.
 
-# How does the network reconnect is handled in the library?
+# How the network reconnect is handled in the library?
 
 The client library supports reconnecting and automatically resubscribe / publish the pending messages.
 
