@@ -38,6 +38,10 @@ Subscribe to a message:
 ```bash
 ts-node basic-client-sub.ts -b ws://mqtt.eclipseprojects.io:80/mqtt -k 120 -t foo/world/# (Default QoS: 0 - if not given)
 ```
+Will message:
+```bash
+ts-node basic-client-will-msg.ts -b ws://mqtt.eclipseprojects.io:80/mqtt -k 120 -t foo/will/1 -p "The will message" -s foo/will/#
+```
 
 # How to use Topic alias?
 MQTTV5 supports a new feature named topic alias and the client library supports it.
@@ -70,7 +74,7 @@ In order to use the topic alias,
 ```
 Note: The topic alias can be changed. Before changing, it is important that, there are no pending requests with the topic alias.
 
-# How does the network reconnect is handled in the library?:
+# How does the network reconnect is handled in the library?
 
 The client library supports reconnecting and automatically resubscribe / publish the pending messages.
 
