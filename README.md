@@ -9,22 +9,38 @@ The library uses websocket as network transport, no other network transports are
 # How to build the library and try out the demo/example?
 The below command produces neccessary artifcats to run in browser and node environment. A browser demo with UI has been provided in demo folder.
 
+```bash
 npm run build
+```
 
 To run in browser:
+```bash
 cd ./dist.browser.demo
+```
 
-Try the index.html in your favourite browser. The UI has the possibility to connect to a broker, subscribe/publish to MQTT messages or try out MQTTv5 properties.
+Run the index.html in brower. The UI has the possibility to connect to a broker, subscribe/publish to MQTT messages or try out MQTTv5 properties.
+The demo uses bootstrap 4 and jquery as dependent components.
 
 Try out the examples:
+```bash
 cd ./examples
+```
 
-Connect to a broker(basic client): ts-node basic-client.ts -b ws://mqtt.eclipseprojects.io:80/mqtt -k 120 -c true
-Publish a message: ts-node basic-client-pub.ts -b ws://mqtt.eclipseprojects.io:80/mqtt -k 120 -t foo/world/1 -p "Welcome" (Default QoS: 0 - if not given)
-Subscribe to a message: ts-node basic-client-sub.ts -b ws://mqtt.eclipseprojects.io:80/mqtt -k 120 -t foo/world/# (Default QoS: 0 - if not given)
+Connect to a broker(basic client):
+```bash
+ts-node basic-client.ts -b ws://mqtt.eclipseprojects.io:80/mqtt -k 120 -c true
+```
+Publish a message:
+```bash
+ts-node basic-client-pub.ts -b ws://mqtt.eclipseprojects.io:80/mqtt -k 120 -t foo/world/1 -p "Welcome" (Default QoS: 0 - if not given)
+```
+Subscribe to a message:
+```bash
+ts-node basic-client-sub.ts -b ws://mqtt.eclipseprojects.io:80/mqtt -k 120 -t foo/world/# (Default QoS: 0 - if not given)
+```
 
 # How to use Topic alias?
-MQTTV5 supports a new feature named topic alias and the client library supports it. In order to use the topic alias,
+MQTTV5 supports a new feature named topic alias and the client library supports it.
 
 In order to know whether the broker supports topic aliases, inspect the connack packet from the MQTT CONNECT response.
 
@@ -41,6 +57,8 @@ Please use a real broker address instead of testURL to try out the below.
 // ...
 ```
 
+In order to use the topic alias,
+
 ```typescript
     const client = await MQTTClient.connect(testURL, {cleanStart: true, keepAlive: 0}, 2000);
 
@@ -50,7 +68,7 @@ Please use a real broker address instead of testURL to try out the below.
     await client.publish({topic: '', topicAlias: 2, payload: payloads[2]});
 // ...
 ```
-Note: The topic alias can be changed. It is important that, no requests are pending before changing the alias for a given topic.
+Note: The topic alias can be changed. Before changing, it is important that, there are no pending requests with the topic alias.
 
 # How does the network reconnect is handled in the library?:
 
