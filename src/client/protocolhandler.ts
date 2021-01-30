@@ -16,7 +16,7 @@ import {decodePubRelPacket, MQTTPubRelPacket, MQTTPubRelReason} from "../message
 import {decodePubCompPacket, MQTTPubCompPacket, MQTTPubCompReason} from "../message/pubcomp";
 import {decodeSubAckPacket, MQTTSubAck, MQTTSubscribe, SubscribePacket} from "../message/subscribe";
 import {MQTTUnsubAck, MQTTUnsubscribe, UnsubscribePacket, decodeUnsubAckPacket} from "../message/unsubscribe";
-import {decodeDisconnectPacket, encodeDisconnectPacket, MQTTDisconnectReason} from "../message/disconnect";
+import {decodeDisconnectPacket, encodeDisconnectPacket, MQTTDisconnect, MQTTDisconnectReason} from "../message/disconnect";
 import {MQTTConnect, encodeConnectPacket} from "../message/connect";
 import {decodeConnAckPacket, MQTTConnAck} from "../message/connack";
 import {MQTTPublish} from "../message/publish";
@@ -213,17 +213,17 @@ export class ProtocolHandler implements PingerCallback {
         return this.subscriptionCache;
     }
 
-    disconnect(code: MQTTDisconnectReason.Code): void | never {
-        this.sendDisconnect(code);
+    disconnect(msg: MQTTDisconnect): void | never {
+        this.sendDisconnect(msg);
 
         this.clearLocalState();
-        this.trace("Disconnected error code: " + code + " Desc: " + MQTTDisconnectReason.Name.get(code));
+        this.trace("Disconnected error code: " + msg.reasonCode + " Desc: " + MQTTDisconnectReason.Name.get(msg.reasonCode));
         this.eventEmitter.emit('disconnected', new Error("no error"));
     }
 
-    sendDisconnect(code: MQTTDisconnectReason.Code): void | never {
+    sendDisconnect(msg: MQTTDisconnect): void | never {
         if (this.connected) {
-            this.schedule(encodeDisconnectPacket({reasonCode: code}));
+            this.schedule(encodeDisconnectPacket(msg));
         }
     }
 
@@ -315,7 +315,7 @@ export class ProtocolHandler implements PingerCallback {
 
             this.connectingPromise = new Deferred<MQTTConnAck>();
             const timer = setTimeout(() => {
-                this.disconnect(MQTTDisconnectReason.Code.UnspecifiedError);
+                this.disconnect({reasonCode: MQTTDisconnectReason.Code.UnspecifiedError});
                 reject(new Error("webSocket timeout"));
             }, timeout);
 
@@ -779,7 +779,7 @@ export class ProtocolHandler implements PingerCallback {
             } else {
                 this.trace(e.message);
                 // pass the error code
-                this.sendDisconnect(MQTTDisconnectReason.Code.ProtocolError);
+                this.sendDisconnect({reasonCode: MQTTDisconnectReason.Code.ProtocolError});
             }
             this.internalDisconnect();
         }

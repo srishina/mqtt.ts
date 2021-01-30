@@ -9,7 +9,7 @@ import {MessageEvents} from "./eventhandler";
 
 import {EventEmitter} from "events";
 import TypedEmitter from "typed-emitter";
-import {MQTTDisconnectReason} from "../message/disconnect";
+import {MQTTDisconnect, MQTTDisconnectReason} from "../message/disconnect";
 import {MQTTStatstics} from "../utils/constants";
 
 /**
@@ -69,8 +69,8 @@ export class MQTTClient extends (EventEmitter as new () => TypedEmitter<MessageE
     /**
      * send MQTT DISCONNECT packet and closes the connection with the to the MQTT broker.
      */
-    disconnect(): void | never {
-        this.protocolHandler.disconnect(MQTTDisconnectReason.Code.NormalDisconnection);
+    disconnect(msg?: MQTTDisconnect): void | never {
+        this.protocolHandler.disconnect(msg ? msg : {reasonCode: MQTTDisconnectReason.Code.NormalDisconnection});
     }
 
     /**

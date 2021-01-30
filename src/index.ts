@@ -1,5 +1,6 @@
 export * from './client/client';
-export {MQTTConnect, MQTTConnectProperties} from './message/connect';
+export {MQTTConnect, MQTTConnectProperties, WillProperties} from './message/connect';
+export {MQTTDisconnect, MQTTDisconnectReason} from './message/disconnect'
 export {MQTTConnAck, MQTTConnAckProperties, MQTTConnAckReason} from './message/connack';
 export {MQTTPublish, MQTTPublishProperties, getPayloadAsArray, getPayloadAsString} from './message/publish';
 export {MQTTSubscription, MQTTSubscribe, MQTTSubscribeProperties, MQTTSubAck, MQTTSubAckProperties, MQTTSubAckReason} from './message/subscribe';

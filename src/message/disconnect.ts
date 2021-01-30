@@ -26,6 +26,7 @@ export class MQTTDisconnectReason {
 export namespace MQTTDisconnectReason {
     export const enum Code {
         NormalDisconnection = 0x00,
+        DisconnectWithWillMessage = 0x04,
         UnspecifiedError = MQTTCommonReasonCode.UnspecifiedError,
         MalformedPacket = MQTTCommonReasonCode.MalformedPacket,
         ProtocolError = MQTTCommonReasonCode.ProtocolError,
@@ -56,6 +57,7 @@ export namespace MQTTDisconnectReason {
     }
     export const Name = new Map<Code, string>([
         [Code.NormalDisconnection, "Normal disconnection"],
+        [Code.DisconnectWithWillMessage, "Disconnect with Will Message"],
         [Code.UnspecifiedError, getCommonReasonCodeName(MQTTCommonReasonCode.UnspecifiedError)],
         [Code.MalformedPacket, getCommonReasonCodeName(MQTTCommonReasonCode.MalformedPacket)],
         [Code.ProtocolError, getCommonReasonCodeName(MQTTCommonReasonCode.ProtocolError)],
@@ -86,6 +88,7 @@ export namespace MQTTDisconnectReason {
     ]);
     export const Description = new Map<Code, string>([
         [Code.NormalDisconnection, "Close the connection normally. Do not send the Will Message."],
+        [Code.DisconnectWithWillMessage, "The Client wishes to disconnect but requires that the Server also publishes its Will Message."],
         [Code.UnspecifiedError, "The Connection is closed but the sender either does not wish to reveal the reason, or none of the other Reason Codes apply."],
         [Code.MalformedPacket, "The received packet does not conform to this specification."],
         [Code.ProtocolError, "An unexpected or out of order packet was received."],

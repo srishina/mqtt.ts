@@ -1,6 +1,7 @@
 import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, DataStreamDecoder, PropertyDecoderOnlyOnce} from "../utils/codec";
 import {PacketType, PropertyID} from '../utils/constants';
 import {DecoderError} from '../client/errors';
+import {getPayloadAsArray} from "./publish";
 
 export type MQTTConnectProperties = {
     sessionExpiryInterval?: number;
@@ -14,13 +15,29 @@ export type MQTTConnectProperties = {
     authenticationData?: Uint8Array;
 }
 
+export type WillProperties = {
+    willDelayInterval?: number;
+    payloadFormatIndicator?: number;
+    messageExpiryInterval?: number;
+    contentType?: string;
+    responseTopic?: string;
+    correlationData?: Uint8Array;
+    userProperty?: Map<string, string>;
+}
+
 export type MQTTConnect = {
     cleanStart: boolean;
     keepAlive: number;
+    clientIdentifier?: string;
 
     properties?: MQTTConnectProperties;
+    willProperties?: WillProperties;
 
-    clientIdentifier?: string;
+    willQoS?: number;
+    willRetain?: boolean;
+    willTopic?: string;
+    willPayload?: Uint8Array | string;
+
     userName?: string;
     password?: Uint8Array;
 }
@@ -46,6 +63,34 @@ export function encodeConnectPacket(msg: MQTTConnect): Uint8Array | never {
         return propertyLen;
     }
 
+    function willPropertyLength(): number {
+        let propertyLen = 0;
+        if (msg.willProperties) {
+            propertyLen += PropertySizeIfNotEmpty.fromUint32(msg.willProperties.willDelayInterval);
+            propertyLen += PropertySizeIfNotEmpty.fromByte(msg.willProperties.payloadFormatIndicator);
+            propertyLen += PropertySizeIfNotEmpty.fromUint32(msg.willProperties.messageExpiryInterval);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.willProperties.contentType);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(msg.willProperties.responseTopic);
+            propertyLen += PropertySizeIfNotEmpty.fromBinaryData(msg.willProperties.correlationData);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8StringPair(msg.willProperties.userProperty);
+
+        }
+        return propertyLen;
+    }
+
+    function encodeWillProperties(enc: DataStreamEncoder, propertyLen: number): void | never {
+        enc.encodeVarUint32(propertyLen);
+        if (msg.willProperties) {
+            PropertyEncoderIfNotEmpty.fromUint32(enc, PropertyID.WillDelayIntervalID, msg.willProperties.willDelayInterval);
+            PropertyEncoderIfNotEmpty.fromByte(enc, PropertyID.PayloadFormatIndicatorID, msg.willProperties.payloadFormatIndicator);
+            PropertyEncoderIfNotEmpty.fromUint32(enc, PropertyID.MessageExpiryIntervalID, msg.willProperties.messageExpiryInterval);
+            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ContentTypeID, msg.willProperties.contentType);
+            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ResponseTopicID, msg.willProperties.responseTopic);
+            PropertyEncoderIfNotEmpty.fromBinaryData(enc, PropertyID.CorrelationDataID, msg.willProperties.correlationData);
+            PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, msg.willProperties.userProperty);
+        }
+    }
+
     function encodeProperties(enc: DataStreamEncoder, propertyLen: number): void | never {
         enc.encodeVarUint32(propertyLen);
         if (msg.properties) {
@@ -62,6 +107,7 @@ export function encodeConnectPacket(msg: MQTTConnect): Uint8Array | never {
     }
 
     const propertyLen = propertyLength();
+    const willPropertyLen = willPropertyLength();
 
     // protocol name, version(1), flags(1), keepalive(2), propertyLength
     let remainingLength = 2 + MQTTProtocolName.length + 1 + 1 + 2 + encodedVarUint32Size(propertyLen) + propertyLen;
@@ -70,6 +116,22 @@ export function encodeConnectPacket(msg: MQTTConnect): Uint8Array | never {
     let connectFlags = 0;
     if (msg.cleanStart) {
         connectFlags |= 0x02;
+    }
+
+    let willPayloadArray: Uint8Array | undefined;
+    if ((msg.willTopic && msg.willPayload)) {
+        connectFlags |= 0x04;
+        remainingLength += (encodedVarUint32Size(willPropertyLen) + willPropertyLen);
+        willPayloadArray = getPayloadAsArray(msg.willPayload);
+        remainingLength += ((willPayloadArray.length + 2) + (msg.willTopic.length + 2));
+    }
+
+    if (msg.willQoS) {
+        connectFlags |= ((msg.willQoS ? msg.willQoS : 0) << 3);
+    }
+
+    if (msg.willRetain) {
+        connectFlags |= 0x20;
     }
 
     const userName = msg.userName;
@@ -102,6 +164,13 @@ export function encodeConnectPacket(msg: MQTTConnect): Uint8Array | never {
 
     // encode client identifier
     encoder.encodeUTF8String(msg.clientIdentifier ? msg.clientIdentifier : "");
+
+    // encode will topic, payload
+    if (msg.willTopic && willPayloadArray) {
+        encodeWillProperties(encoder, willPropertyLen);
+        encoder.encodeUTF8String(msg.willTopic);
+        encoder.encodeBinaryData(willPayloadArray);
+    }
 
     // encode username, password
     if (userName && userName.length != 0) {
