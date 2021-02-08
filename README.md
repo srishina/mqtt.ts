@@ -51,8 +51,8 @@ In order to know whether the broker supports topic aliases, inspect the connack 
 Please use a real broker address instead of testURL to try out the below.
 
 ```typescript
-    const client = await MQTTClient.connect(tetURL, {cleanStart: true, keepAlive: 0}, 2000);
-    const connAck = client.getConnectResponse();
+    const mqttClient = new MQTTClient(testURL, {timeout: 2000});
+    const connack = await mqttClient.connect({cleanStart: true, keepAlive: 0});
     if (connAck.topicAliasMaximum && connAck.topicAliasMaximum > 0) {
         // broker supports topic alias and the value of connAck.topicAliasMaximum indicates
         // the highest value the broker accept as a topic alias sent by the client.
@@ -64,12 +64,13 @@ Please use a real broker address instead of testURL to try out the below.
 In order to use the topic alias,
 
 ```typescript
-    const client = await MQTTClient.connect(testURL, {cleanStart: true, keepAlive: 0}, 2000);
+    const mqttClient = new MQTTClient(testURL, {timeout: 2000});
+    const connack = await mqttClient.connect({cleanStart: true, keepAlive: 0});
 
     const payloads: string[] = ["Hello World!", "Welcome!", "Willkommen!"];
-    await client.publish({topic: 'foo/test/1', topicAlias: 2, payload: payloads[1], qos: 1});
+    await mqttClient.publish({topic: 'foo/test/1', topicAlias: 2, payload: payloads[1], qos: 1});
     // From this point onwards, "foo/test/1" can be used with an alias 2
-    await client.publish({topic: '', topicAlias: 2, payload: payloads[2]});
+    await mqttClient.publish({topic: '', topicAlias: 2, payload: payloads[2]});
 // ...
 ```
 Note: The topic alias can be changed. Before changing, it is important that, there are no pending requests with the topic alias.
@@ -89,11 +90,21 @@ If the network connection is dropped, the library tries to reconnect with the br
 1. If the broker still has the session state, then the pending messages will be send, which can also include partial PUBLISH messages with QoS 2. No resubscription is needed as broker has the subscriptions.
 2. If the broker has no session state, then the client library resubscribes to the already subscribed topics and send pending messages. For QoS 1 & 2 the library restarts the publish flow again. Note that, in this scenario the resubscription may fail and the client will be notified of the status of the resubscription.
 
+Connection retry uses exponential backoff with jitter. 
+```typescript
+    const mqttClient = new MQTTClient(testURL, {timeout: 2000, initialReconnectDelay: 1000, maxReconnectDelay: 32000, jitter: 0.3});
+
+    initialReconnectDelay & maxReconnectDelay are in ms.
+
+    please see Options for more information
+```
+
 # Network state changes:
 The client can subscribe to network state changes.
 
 ```typescript
-    const mqttClient = await MQTTClient.connect(testURL, {cleanStart: true, keepAlive: 0}, 2000);
+    const mqttClient = new MQTTClient(testURL, {timeout: 2000});
+    const connack = await mqttClient.connect({cleanStart: true, keepAlive: 0});
 
     mqttClient.on("disconnected", (error: Error) => {
         // disconnected
@@ -111,7 +122,8 @@ The client can subscribe to network state changes.
 
 # Network statistics such as the number of bytes sent, received etc..:
 ```typescript
-    const mqttClient = await MQTTClient.connect(testURL, {cleanStart: true, keepAlive: 0}, 2000);
+    const mqttClient = new MQTTClient(testURL, {timeout: 2000});
+    const connack = await mqttClient.connect({cleanStart: true, keepAlive: 0});
     // This method can be called periodically to know the network statistics
     let stats = mqttClient.getStatistics();
     logMessage(`Bytes sent: ${stats.numBytesSent} Bytes received: ${stats.numBytesReceived}

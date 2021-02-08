@@ -47,7 +47,7 @@ class clientCompletionNotifier {
 
 interface PingerCallback {
     sendPing(): void | never;
-    internalDisconnect(): void | never;
+    internalDisconnect(e: Error): void | never;
 
 }
 
@@ -67,7 +67,7 @@ class Pinger {
     doTimeout(): void {
         if (!this.isReset) {
             // Disconnect the client, we didn't receive PINGRESP
-            this.pingerCb.internalDisconnect();
+            this.pingerCb.internalDisconnect(new Error("PINGRESP not received, disconnecting."));
 
         } else {
             this.isReset = false;
@@ -116,6 +116,31 @@ class subscriptionCache extends Array<MQTTSubscribe> {
     }
 }
 
+export class ExponentialBackoff {
+    private current: number;
+    private maxValue: number;
+    private jitter: number; // 0-1 inclusive
+
+    constructor(initialDelay: number, maxValue: number, jitter: number) {
+        this.current = initialDelay;
+        this.maxValue = maxValue;
+        this.jitter = jitter;
+    }
+
+    next(): number {
+        let range = (this.current - (this.current / 2)) * this.jitter;
+        this.current += (Math.random() * range) - range / 2;
+
+        this.current = Math.max(0, Math.min(this.maxValue, Math.floor(this.current)));
+
+        var current = this.current;
+
+        // calculate the next value
+        this.current *= 2;
+        return Math.floor(current);
+    }
+}
+
 export class ProtocolHandler implements PingerCallback {
     private webSocket?: WebSocket;
     private uri: string;
@@ -143,7 +168,6 @@ export class ProtocolHandler implements PingerCallback {
     private pinger: Pinger;
 
     private autoReconnect: boolean;
-    private reconnectInterval: number;
     private connectParams?: MQTTConnect;
     private reconnecting: boolean;
     private clientTopicAliasMapping: Map<number, string>;
@@ -153,6 +177,8 @@ export class ProtocolHandler implements PingerCallback {
     private sendQoS12Quota: number;
     private pendingQoS12Pkts: PublishPacket[];
     private pendingQoS0Pkts: PublishPacket[];
+
+    private backoff: ExponentialBackoff;
 
     constructor(uri: string, options: Options, emitter: TypedEventEmitter<MessageEvents>) {
         this.eventEmitter = emitter;
@@ -171,7 +197,6 @@ export class ProtocolHandler implements PingerCallback {
         this.connected = false;
         this.pinger = new Pinger(0, this);
         this.autoReconnect = true;
-        this.reconnectInterval = 1;
         this.reconnecting = true;
 
         this.sendQoS12Quota = 65535;
@@ -179,6 +204,8 @@ export class ProtocolHandler implements PingerCallback {
         this.pendingQoS0Pkts = []; // we store the QoS0 packets when we are not connected
 
         this.mqttStastics = {numBytesSent: 0, numBytesReceived: 0, totalPublishPktsSent: 0, totalPublishPktsReceived: 0};
+
+        this.backoff = new ExponentialBackoff(this.options.initialReconnectDelay, this.options.maxReconnectDelay, this.options.jitter);
     }
 
     connect(msg: MQTTConnect): Promise<MQTTConnAck> {
@@ -234,13 +261,15 @@ export class ProtocolHandler implements PingerCallback {
         this.pendingQoS12Pkts = [];
     }
 
-    internalDisconnect(): void | never {
+    internalDisconnect(e: Error): void | never {
         this.clearLocalState();
         this.eventEmitter.emit("disconnected", new Error("Connection lost"));
+        let nextRetryInterval = this.backoff.next()
         // reconnect if needed
         setTimeout(() => {
             this.reconnect();
-        }, this.reconnectInterval * 1000);
+        }, nextRetryInterval);
+        this.trace(`Connection failed with error ${e.message}, will retry after " + ${nextRetryInterval / 1000} + " secs`);
     }
 
     private reconnect(): void {
@@ -251,16 +280,15 @@ export class ProtocolHandler implements PingerCallback {
         if (!this.connected) {
             this.eventEmitter.emit("reconnecting", "Trying to reconnect...");
             this.reconnecting = true;
-            this.doConnect(3000).then((result: MQTTConnAck) => {
-                this.reconnectInterval = 1;
+            this.doConnect(this.options.timeout).then((result: MQTTConnAck) => {
+                this.backoff = new ExponentialBackoff(this.options.initialReconnectDelay, this.options.maxReconnectDelay, this.options.jitter);
                 this.reconnecting = false;
                 this.eventEmitter.emit("reconnected", result);
                 this.mqttConnAck = result;
                 this.drainPendingPkts();
             }).catch((error) => {
-                this.reconnectInterval += 5;
-                this.internalDisconnect();
-                this.trace(`Reconnect failed with error ${error.message}, will retry after " + ${this.reconnectInterval} + " secs`);
+                this.backoff.next()
+                this.internalDisconnect(error);
             });
         }
     }
@@ -271,13 +299,16 @@ export class ProtocolHandler implements PingerCallback {
             this.webSocket!.binaryType = 'arraybuffer';
 
             this.webSocket!.onclose = (event: CloseEvent) => {
+                let e: Error;
                 if (event.code === 1000) {
+                    e = new Error("Websocket closed normally");
                     console.log("Websocket closed normally");
                 } else {
+                    e = new Error("Websocket closed abnormally " + event.code);
                     // reconnect
-                    this.eventEmitter.emit('disconnected', new Error("Websocket closed abnormally " + event.code));
+                    this.eventEmitter.emit('disconnected', e);
                 }
-                this.internalDisconnect();
+                this.internalDisconnect(e);
             };
 
             this.webSocket!.onerror = (error: Event) => {
@@ -762,7 +793,7 @@ export class ProtocolHandler implements PingerCallback {
                 // pass the error code
                 this.sendDisconnect({reasonCode: MQTTDisconnectReason.Code.ProtocolError});
             }
-            this.internalDisconnect();
+            this.internalDisconnect(e);
         }
     }
 
