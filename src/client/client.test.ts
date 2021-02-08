@@ -36,7 +36,8 @@ describe('MQTT client connection test with a mock server', function () {
     it('Simple MQTT Client connect/close', async () => {
         const server = new testMockServer({sessionPresent: false, reasonCode: MQTTConnAckReason.Code.Success});
         server.start();
-        const client = await MQTTClient.connect(testURLLocalhost, {cleanStart: true, keepAlive: 0}, 2000);
+        const client = new MQTTClient(testURLLocalhost)
+        await client.connect({cleanStart: true, keepAlive: 0}, 2000);
         expect(() => client.disconnect()).to.not.throw();
         server.stop();
     });
@@ -58,7 +59,8 @@ describe('MQTT client connection test with a mock server', function () {
             }
         }
 
-        const client = await MQTTClient.connect(testURLLocalhost, {cleanStart: true, keepAlive: 0}, 2000);
+        const client = new MQTTClient(testURLLocalhost)
+        await client.connect({cleanStart: true, keepAlive: 0}, 2000);
         const subscriber = new TestSubscriber();
 
         const s: MQTTSubscription = {topicFilter: 'subu/test/#', qos: 2};
@@ -88,7 +90,8 @@ describe('MQTT client connection test with a mock server', function () {
         }
 
         let resubscribed = false;
-        const client = await MQTTClient.connect(testURLLocalhost, {cleanStart: true, keepAlive: 0}, 2000);
+        const client = new MQTTClient(testURLLocalhost)
+        await client.connect({cleanStart: true, keepAlive: 0}, 2000);
         client.on("resubscription", (subscribe: MQTTSubscribe, result: ResubscribeResult) => {
             if (result.suback) {
                 resubscribed = true;
@@ -122,7 +125,8 @@ describe('MQTT client connection test with a mock server', function () {
             ]
         );
         server.setResponses(responses);
-        const client = await MQTTClient.connect(testURLLocalhost, {cleanStart: true, keepAlive: 0}, 2000);
+        const client = new MQTTClient(testURLLocalhost)
+        await client.connect({cleanStart: true, keepAlive: 0}, 2000);
         await client.publish({topic: 'subu/test/1', payload: "foo", qos: 1});
         expect(() => client.disconnect()).to.not.throw();
         server.stop();
@@ -140,7 +144,8 @@ describe('MQTT client connection test with a mock server', function () {
         );
         server.setResponses(responses);
 
-        const client = await MQTTClient.connect(testURLLocalhost, {cleanStart: true, keepAlive: 0}, 2000);
+        const client = new MQTTClient(testURLLocalhost)
+        await client.connect({cleanStart: true, keepAlive: 0}, 2000);
         await client.publish({topic: 'subu/test/1', payload: "foo", qos: 2});
         expect(() => client.disconnect()).to.not.throw();
         server.stop();
@@ -172,7 +177,9 @@ describe('MQTT client connection test with a mock server', function () {
             }
         }
 
-        const client = await MQTTClient.connect(testURLLocalhost, {cleanStart: true, keepAlive: 0}, 2000);
+        const client = new MQTTClient(testURLLocalhost)
+        await client.connect({cleanStart: true, keepAlive: 0}, 2000);
+
         const subscriber = new TestSubscriber();
 
         const s: MQTTSubscription = {topicFilter: 'subu/test/#', qos: 2};
@@ -215,7 +222,9 @@ describe('MQTT client connection test with a mock server', function () {
             }
         }
 
-        const client = await MQTTClient.connect(testURLLocalhost, {cleanStart: true, keepAlive: 0}, 2000);
+        const client = new MQTTClient(testURLLocalhost)
+        await client.connect({cleanStart: true, keepAlive: 0}, 2000);
+
         const subscriber = new TestSubscriber();
 
         const s: MQTTSubscription = {topicFilter: 'subu/test/#', qos: 2};
@@ -262,7 +271,9 @@ describe('MQTT client connection test with a mock server', function () {
             }
         }
 
-        const client = await MQTTClient.connect(testURLLocalhost, {cleanStart: true, keepAlive: 0}, 2000);
+        const client = new MQTTClient(testURLLocalhost)
+        await client.connect({cleanStart: true, keepAlive: 0}, 2000);
+
         const subscriber = new TestSubscriber();
 
         const s: MQTTSubscription = {topicFilter: 'subu/test/#', qos: 2};

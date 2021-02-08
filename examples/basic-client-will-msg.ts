@@ -32,12 +32,14 @@ async function run() {
         keepAlive: opts.keepAlive, cleanStart: opts.cleanStart,
         willProperties: {willDelayInterval: 1}, willTopic: opts.willTopic, willPayload: opts.willPayload
     };
-    const willClient = await mqttv5.connect(opts.broker, mqttConnect, 2000).catch(err => {
+    const willClient = new mqttv5.MQTTClient(opts.broker)
+    await willClient.connect(mqttConnect, 2000).catch(err => {
         console.log("Failed to connect, error: " + err);
     });
     if (willClient) {
         try {
-            const client2 = await mqttv5.connect(opts.broker, {keepAlive: opts.keepAlive, cleanStart: opts.cleanStart}, 2000).catch(err => {
+            const client2 = new mqttv5.MQTTClient(opts.broker)
+            await client2.connect({keepAlive: opts.keepAlive, cleanStart: opts.cleanStart}, 2000).catch(err => {
                 console.log("Failed to connect, error: " + err);
             });
 

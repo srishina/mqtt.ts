@@ -12,11 +12,12 @@ const opts = yargs
 
 async function run() {
     const mqttConnect: mqttv5.MQTTConnect = {keepAlive: opts.keepAlive, cleanStart: opts.cleanStart};
-    const result = await mqttv5.connect(opts.broker, mqttConnect, 2000).catch(err => {
+    const client = new mqttv5.MQTTClient(opts.broker)
+    const result = await client.connect(mqttConnect, 2000).catch(err => {
         console.log("Failed to connect, error: " + err);
     });
     if (result) {
-        result.disconnect();
+        client.disconnect();
     }
 }
 

@@ -117,9 +117,7 @@ class subscriptionCache extends Array<MQTTSubscribe> {
 
 export class ProtocolHandler implements PingerCallback {
     private webSocket?: WebSocket;
-    // private connTimeout: number;
     private uri: string;
-    private clientID: string;
     private remainingBuffer?: Uint8Array;
     private topicMatcher: TopicMatcher<MQTTPublish>;
     private pidgen: PIDGenerator;
@@ -129,9 +127,6 @@ export class ProtocolHandler implements PingerCallback {
     private connectingPromise?: Deferred<MQTTConnAck>;
 
     private clientCompletionNotifiers: Map<number, clientCompletionNotifier>;
-    // private subscribeCompletionNotifiers: Map<number, subscribeNotifier>;
-    // private unsubscribeCompletionNotifiers: Map<number, unsubscribeNotifier>;
-    // private publishCompletionNotifiers: Map<number, publishNotifier>;
 
     private outgoingRequests: Map<number, PacketWithID>;
     // topic filter and the subscribe request. used when the server does not support retaining of the
@@ -147,7 +142,7 @@ export class ProtocolHandler implements PingerCallback {
 
     private autoReconnect: boolean;
     private reconnectInterval: number;
-    private connectParams: MQTTConnect;
+    private connectParams?: MQTTConnect;
     private reconnecting: boolean;
     private clientTopicAliasMapping: Map<number, string>;
 
@@ -157,17 +152,13 @@ export class ProtocolHandler implements PingerCallback {
     private pendingQoS12Pkts: PublishPacket[];
     private pendingQoS0Pkts: PublishPacket[];
 
-    constructor(uri: string, msg: MQTTConnect, emitter: TypedEventEmitter<MessageEvents>, clientID?: string) {
+    constructor(uri: string, emitter: TypedEventEmitter<MessageEvents>) {
         this.eventEmitter = emitter;
         this.uri = uri;
-        this.clientID = clientID || "";
         this.topicMatcher = new TopicMatcher<MQTTPublish>();
         this.outgoingRequests = new Map<number, PublishPacket>();
         this.incommingPublish = new Map<number, MQTTPublish>();
         this.clientCompletionNotifiers = new Map<number, clientCompletionNotifier>();
-        // this.subscribeCompletionNotifiers = new Map<number, subscribeNotifier>();
-        // this.unsubscribeCompletionNotifiers = new Map<number, unsubscribeNotifier>();
-        // this.publishCompletionNotifiers = new Map<number, publishNotifier>();
         this.clientTopicAliasMapping = new Map<number, string>();
 
         this.subscriptionCache = new subscriptionCache();
@@ -177,7 +168,6 @@ export class ProtocolHandler implements PingerCallback {
         this.connected = false;
         this.pinger = new Pinger(0, this);
         this.autoReconnect = true;
-        this.connectParams = msg;
         this.reconnectInterval = 1;
         this.reconnecting = true;
 
@@ -188,21 +178,16 @@ export class ProtocolHandler implements PingerCallback {
         this.mqttStastics = {numBytesSent: 0, numBytesReceived: 0, totalPublishPktsSent: 0, totalPublishPktsReceived: 0};
     }
 
-    static connect(uri: string, msg: MQTTConnect, timeout: number, emitter: TypedEventEmitter<MessageEvents>): Promise<ProtocolHandler> {
-        return new Promise<ProtocolHandler>((resolve, reject) => {
-            const ph = new ProtocolHandler(uri, msg, emitter, msg.clientIdentifier);
-            ph.connect(msg, timeout)
-                .then((result) => {
-                    ph.mqttConnAck = result;
-                    resolve(ph);
+    connect(msg: MQTTConnect, timeout: number): Promise<MQTTConnAck> {
+        return new Promise<MQTTConnAck>((resolve, reject) => {
+            this.connectParams = msg;
+            this.doConnect(timeout)
+                .then((result: MQTTConnAck) => {
+                    resolve(result);
                 }).catch((err) => {
                     reject(err);
                 });
         });
-    }
-
-    getConnectResponse(): MQTTConnAck {
-        return this.mqttConnAck!;
     }
 
     getStatistics(): MQTTStatstics {
@@ -255,20 +240,12 @@ export class ProtocolHandler implements PingerCallback {
         }, this.reconnectInterval * 1000);
     }
 
-    connect(msg: MQTTConnect, timeout: number): Promise<MQTTConnAck> {
-        this.connectParams = msg;
-        return this.doConnect(timeout);
-    }
-
     private reconnect(): void {
         if (!this.autoReconnect) {
             return;
         }
 
         if (!this.connected) {
-            // set the clean session to false
-            this.connectParams.cleanStart = false;
-            this.connectParams.clientIdentifier = this.clientID;
             this.eventEmitter.emit("reconnecting", "Trying to reconnect...");
             this.reconnecting = true;
             this.doConnect(3000).then((result: MQTTConnAck) => {
@@ -328,7 +305,7 @@ export class ProtocolHandler implements PingerCallback {
                         this.pinger = new Pinger(connack.properties.serverKeepAlive, this);
                     }
                     else {
-                        this.pinger = new Pinger(this.connectParams.keepAlive, this);
+                        this.pinger = new Pinger(this.connectParams ? this.connectParams.keepAlive : 0, this);
                     }
 
                     if (connack.properties && connack.properties.receiveMaximum) {
@@ -345,7 +322,11 @@ export class ProtocolHandler implements PingerCallback {
     }
 
     private protocolConnect(): void | never {
-        this.websocketSend(encodeConnectPacket(this.connectParams));
+        if (this.connectParams) {
+            this.websocketSend(encodeConnectPacket(this.connectParams));
+            return
+        }
+        throw new Error("CONNECT params is not set, can't connect")
     }
 
     private drainPendingPkts(): void | never {
@@ -647,9 +628,6 @@ export class ProtocolHandler implements PingerCallback {
         switch (ptype) {
             case PacketType.CONNACK: {
                 const connAck = decodeConnAckPacket(decoder);
-                if (connAck.properties && connAck.properties.assignedClientIdentifier && this.clientID.length == 0) {
-                    this.clientID = connAck.properties.assignedClientIdentifier;
-                }
                 if (this.connectingPromise) {
                     this.connectingPromise.resolve(connAck);
                 }

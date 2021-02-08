@@ -13,26 +13,19 @@ import {MQTTDisconnect, MQTTDisconnectReason} from "../message/disconnect";
 import {MQTTStatstics} from "../utils/constants";
 
 /**
- * Creates a MQTT client by connecting to the specified MQTT broker
- * Returns a Promise that when resolved, indicates that the connection is successful
- * and MQTTClient object is returned.
- * @param url MQTT broker where the client should attempt a connection
- * @param msg MQTT protocol CONNECT parameter
- * @param timeout
- */
-export function connect(url: string, msg: MQTTConnect, timeout: number): Promise<MQTTClient> {
-    return MQTTClient.connect(url, msg, timeout);
-}
-
-/**
  * MQTT Client object
  */
 export class MQTTClient extends (EventEmitter as new () => TypedEmitter<MessageEvents>) {
     private protocolHandler!: ProtocolHandler;
     private uri: string;
 
+    /**
+     * constructor
+     * @param url MQTT broker where the client should attempt a connection
+     */
     constructor(uri: string) {
         super();
+        this.protocolHandler = new ProtocolHandler(uri, this)
         this.uri = uri;
     }
 
@@ -40,22 +33,22 @@ export class MQTTClient extends (EventEmitter as new () => TypedEmitter<MessageE
         return this.uri;
     }
 
-    /** @internal */
-    static connect(uri: string, msg: MQTTConnect, timeout: number): Promise<MQTTClient> {
+    /**
+     * connect to the specified MQTT broker
+     * Returns a Promise that when resolved, indicates that the connection is successful
+     * and MQTTConnAck object is returned.
+     * @param msg MQTT protocol CONNECT parameter
+     * @param timeout
+     */
+    connect(msg: MQTTConnect, timeout: number): Promise<MQTTConnAck> {
         return new Promise((resolve, reject) => {
-            const client = new MQTTClient(uri);
-            ProtocolHandler.connect(uri, msg, timeout, client)
-                .then((ph) => {
-                    client.protocolHandler = ph;
-                    resolve(client);
+            this.protocolHandler.connect(msg, timeout)
+                .then((connack) => {
+                    resolve(connack);
                 }).catch((err) => {
                     reject(err);
                 });
         });
-    }
-
-    getConnectResponse(): MQTTConnAck {
-        return this.protocolHandler.getConnectResponse();
     }
 
     /**

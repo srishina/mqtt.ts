@@ -149,7 +149,7 @@ function onConnect(): void {
     const port = (<HTMLInputElement>document.getElementById("port-input")).value;
     const path = (<HTMLInputElement>document.getElementById("path-input")).value;
 
-    const uri = "ws://" + host + ":" + parseInt(port) + path;
+    const url = "ws://" + host + ":" + parseInt(port) + path;
 
     const clientID = (<HTMLInputElement>document.getElementById("client-id-input")).value;
 
@@ -172,27 +172,27 @@ function onConnect(): void {
         mqttConnect.password = mqttv5.getPayloadAsArray(pwd);
     }
 
-    const result = mqttv5.connect(uri, mqttConnect, 2000);
-    result.then((client: mqttv5.MQTTClient) => {
-        mqttClient = client;
-        onConnected(uri);
+    mqttClient = new mqttv5.MQTTClient(url)
+    // setup event handlers
+    mqttClient.on("logs", (entry: mqttv5.LogEntry) => {
+        logMessage(entry.message);
+    });
 
-        // setup event handlers
-        mqttClient.on("logs", (entry: mqttv5.LogEntry) => {
-            logMessage(entry.message);
-        });
+    mqttClient.on("disconnected", (error: Error) => {
+        onConnectionError(error);
+    });
 
-        mqttClient.on("disconnected", (error: Error) => {
-            onConnectionError(error);
-        });
+    mqttClient.on("reconnecting", (msg: string) => {
+        logMessage(msg);
+    });
 
-        mqttClient.on("reconnecting", (msg: string) => {
-            logMessage(msg);
-        });
+    mqttClient.on("reconnected", (result: mqttv5.MQTTConnAck) => {
+        onConnected(url);
+    });
 
-        mqttClient.on("reconnected", (result: mqttv5.MQTTConnAck) => {
-            onConnected(uri);
-        });
+    const result = mqttClient.connect(mqttConnect, 2000);
+    result.then((connack: mqttv5.MQTTConnAck) => {
+        onConnected(url);
 
         statisticsTimer = setInterval(() => {
             printStatistics()
