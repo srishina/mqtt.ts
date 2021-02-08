@@ -24,6 +24,7 @@ import {MessageEvents} from "./eventhandler";
 import TypedEventEmitter from "typed-emitter";
 import {ServerDisconnectedError} from "./errors";
 import {buildHeaderOnlyPacket, PacketWithID} from "../message/packet";
+import {Options} from "./options";
 
 export type Subscriber = Observer<MQTTPublish>
 
@@ -118,6 +119,7 @@ class subscriptionCache extends Array<MQTTSubscribe> {
 export class ProtocolHandler implements PingerCallback {
     private webSocket?: WebSocket;
     private uri: string;
+    private options: Options;
     private remainingBuffer?: Uint8Array;
     private topicMatcher: TopicMatcher<MQTTPublish>;
     private pidgen: PIDGenerator;
@@ -152,9 +154,10 @@ export class ProtocolHandler implements PingerCallback {
     private pendingQoS12Pkts: PublishPacket[];
     private pendingQoS0Pkts: PublishPacket[];
 
-    constructor(uri: string, emitter: TypedEventEmitter<MessageEvents>) {
+    constructor(uri: string, options: Options, emitter: TypedEventEmitter<MessageEvents>) {
         this.eventEmitter = emitter;
         this.uri = uri;
+        this.options = options;
         this.topicMatcher = new TopicMatcher<MQTTPublish>();
         this.outgoingRequests = new Map<number, PublishPacket>();
         this.incommingPublish = new Map<number, MQTTPublish>();
@@ -178,10 +181,10 @@ export class ProtocolHandler implements PingerCallback {
         this.mqttStastics = {numBytesSent: 0, numBytesReceived: 0, totalPublishPktsSent: 0, totalPublishPktsReceived: 0};
     }
 
-    connect(msg: MQTTConnect, timeout: number): Promise<MQTTConnAck> {
+    connect(msg: MQTTConnect): Promise<MQTTConnAck> {
         return new Promise<MQTTConnAck>((resolve, reject) => {
             this.connectParams = msg;
-            this.doConnect(timeout)
+            this.doConnect(this.options.timeout)
                 .then((result: MQTTConnAck) => {
                     resolve(result);
                 }).catch((err) => {
@@ -324,9 +327,9 @@ export class ProtocolHandler implements PingerCallback {
     private protocolConnect(): void | never {
         if (this.connectParams) {
             this.websocketSend(encodeConnectPacket(this.connectParams));
-            return
+            return;
         }
-        throw new Error("CONNECT params is not set, can't connect")
+        throw new Error("CONNECT params is not set, can't connect");
     }
 
     private drainPendingPkts(): void | never {

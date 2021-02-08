@@ -11,6 +11,11 @@ import {EventEmitter} from "events";
 import TypedEmitter from "typed-emitter";
 import {MQTTDisconnect, MQTTDisconnectReason} from "../message/disconnect";
 import {MQTTStatstics} from "../utils/constants";
+import {Options} from "./options";
+
+const defaultOpts = {
+    timeout: 2000
+};
 
 /**
  * MQTT Client object
@@ -23,9 +28,9 @@ export class MQTTClient extends (EventEmitter as new () => TypedEmitter<MessageE
      * constructor
      * @param url MQTT broker where the client should attempt a connection
      */
-    constructor(uri: string) {
+    constructor(uri: string, options: Partial<Options> = {}) {
         super();
-        this.protocolHandler = new ProtocolHandler(uri, this)
+        this.protocolHandler = new ProtocolHandler(uri, Object.assign(defaultOpts, options), this);
         this.uri = uri;
     }
 
@@ -40,9 +45,9 @@ export class MQTTClient extends (EventEmitter as new () => TypedEmitter<MessageE
      * @param msg MQTT protocol CONNECT parameter
      * @param timeout
      */
-    connect(msg: MQTTConnect, timeout: number): Promise<MQTTConnAck> {
+    connect(msg: MQTTConnect): Promise<MQTTConnAck> {
         return new Promise((resolve, reject) => {
-            this.protocolHandler.connect(msg, timeout)
+            this.protocolHandler.connect(msg)
                 .then((connack) => {
                     resolve(connack);
                 }).catch((err) => {

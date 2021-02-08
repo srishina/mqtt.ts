@@ -172,7 +172,7 @@ function onConnect(): void {
         mqttConnect.password = mqttv5.getPayloadAsArray(pwd);
     }
 
-    mqttClient = new mqttv5.MQTTClient(url)
+    mqttClient = new mqttv5.MQTTClient(url, {timeout: 2000})
     // setup event handlers
     mqttClient.on("logs", (entry: mqttv5.LogEntry) => {
         logMessage(entry.message);
@@ -190,7 +190,7 @@ function onConnect(): void {
         onConnected(url);
     });
 
-    const result = mqttClient.connect(mqttConnect, 2000);
+    const result = mqttClient.connect(mqttConnect);
     result.then((connack: mqttv5.MQTTConnAck) => {
         onConnected(url);
 

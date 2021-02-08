@@ -7,3 +7,4 @@ export {MQTTSubscription, MQTTSubscribe, MQTTSubscribeProperties, MQTTSubAck, MQ
 export {MQTTUnsubscribe, MQTTUnsubscribeProperties, MQTTUnsubAck, MQTTUnsubAckReason} from './message/unsubscribe';
 export {Subscriber} from './client/protocolhandler';
 export {LogEntry} from './utils/constants';
+export {Options} from './client/options';

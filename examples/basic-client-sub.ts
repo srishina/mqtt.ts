@@ -22,8 +22,8 @@ class TestSubscriber implements mqttv5.Subscriber {
 }
 async function run() {
     const mqttConnect: mqttv5.MQTTConnect = {keepAlive: opts.keepAlive, cleanStart: opts.cleanStart};
-    const client = new mqttv5.MQTTClient(opts.broker)
-    const connack = await client.connect(mqttConnect, 2000).catch(err => {
+    const client = new mqttv5.MQTTClient(opts.broker, {timeout: 2000})
+    const connack = await client.connect(mqttConnect).catch(err => {
         console.log("Failed to connect, error: " + err);
     });
     if (client) {
