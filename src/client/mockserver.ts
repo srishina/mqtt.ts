@@ -20,12 +20,16 @@ export class testMockServer {
     private conn?: WebSocket;
     private triggerPublishOnsubscribe: boolean;
     private publishAckd: boolean;
+    private disconnectAtPktCount: number
+    private numRecvdPkts: number;
 
-    constructor(connack: MQTTConnAck) {
+    constructor(connack: MQTTConnAck, disconnectAtPktCount?: number) {
         this.server = new WebSocket.Server({port: this.port});
         this.connAckPacket = connack;
         this.triggerPublishOnsubscribe = false;
         this.publishAckd = false;
+        this.numRecvdPkts = 0;
+        this.disconnectAtPktCount = disconnectAtPktCount ? disconnectAtPktCount : 0;
     }
 
     setResponses(responses: Map<PacketType, MQTTSubAck | MQTTUnsubAck | MQTTPublish | MQTTPubAck | MQTTPubRec | MQTTPubRel | MQTTPubComp>) {
@@ -83,6 +87,12 @@ export class testMockServer {
 
                 // Mark the decoder read boundary
                 decoderToUse.markBoundary(remainingLen);
+                this.numRecvdPkts++;
+                if (this.disconnectAtPktCount != 0 && this.numRecvdPkts == this.disconnectAtPktCount) {
+                    this.closeClientConnection();
+                    this.numRecvdPkts = 0;
+                    return;
+                }
                 this.handleMessage(byte0, decoderToUse);
             }
         }

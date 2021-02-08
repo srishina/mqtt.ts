@@ -31,7 +31,7 @@ function delay(ms: number) {
 }
 
 describe('MQTT client connection test with a mock server', function () {
-    this.timeout(3000);
+    this.timeout(10000);
 
     it('Simple MQTT Client connect/close', async () => {
         const server = new testMockServer({sessionPresent: false, reasonCode: MQTTConnAckReason.Code.Success});
@@ -290,6 +290,70 @@ describe('MQTT client connection test with a mock server', function () {
         expect(() => client.disconnect()).to.not.throw();
 
         expect(server.isPublishAckd()).to.true;
+        server.stop();
+    });
+
+    it('Simple MQTT Client publish after reconnect - with no session', async () => {
+        const server: testMockServer = new testMockServer({
+            sessionPresent: false, reasonCode: MQTTConnAckReason.Code.Success, properties: {receiveMaximum: 10}
+        }, 30);
+        server.start();
+
+        const responses = new Map<PacketType, MQTTPubRec | MQTTPubComp>(
+            [
+                [PacketType.PUBREC, {reason: MQTTPubRecReason.Code.Success}],
+                [PacketType.PUBCOMP, {reason: MQTTPubCompReason.Code.Success}],
+            ]
+        );
+
+        server.setResponses(responses);
+
+        const client = new MQTTClient(testURLLocalhost)
+        await client.connect({cleanStart: true, keepAlive: 0}, 2000);
+
+        let totalPublish = 80;
+        const promises: Promise<void>[] = [];
+        for (let i = 0; i < totalPublish; i++) {
+            promises.push(client.publish({topic: 'TEST/GREETING', payload: "Hello world " + " " + i, qos: 2}));
+        }
+
+        await Promise.all(promises).then((values) => {
+            expect(values.length).to.equal(totalPublish);
+        });
+
+        expect(() => client.disconnect()).to.not.throw();
+        server.stop();
+    });
+
+    it('Simple MQTT Client publish after reconnect - with session', async () => {
+        const server: testMockServer = new testMockServer({
+            sessionPresent: true, reasonCode: MQTTConnAckReason.Code.Success, properties: {receiveMaximum: 8}
+        }, 30);
+        server.start();
+
+        const responses = new Map<PacketType, MQTTPubRec | MQTTPubComp>(
+            [
+                [PacketType.PUBREC, {reason: MQTTPubRecReason.Code.Success}],
+                [PacketType.PUBCOMP, {reason: MQTTPubCompReason.Code.Success}],
+            ]
+        );
+
+        server.setResponses(responses);
+
+        const client = new MQTTClient(testURLLocalhost)
+        await client.connect({cleanStart: true, keepAlive: 0}, 2000);
+
+        let totalPublish = 80;
+        const promises: Promise<void>[] = [];
+        for (let i = 0; i < totalPublish; i++) {
+            promises.push(client.publish({topic: 'TEST/GREETING', payload: "Hello world " + " " + i, qos: 2}));
+        }
+
+        await Promise.all(promises).then((values) => {
+            expect(values.length).to.equal(totalPublish);
+        });
+
+        expect(() => client.disconnect()).to.not.throw();
         server.stop();
     });
 });
