@@ -90,7 +90,7 @@ describe('MQTT client connection test with a mock server', function () {
         }
 
         let resubscribed = false;
-        const client = new MQTTClient(testURLLocalhost, {timeout: 2000});
+        const client = new MQTTClient(testURLLocalhost, {timeout: 2000, initialReconnectDelay: 30});
         await client.connect({cleanStart: true, keepAlive: 0});
         client.on("resubscription", (subscribe: MQTTSubscribe, result: ResubscribeResult) => {
             if (result.suback) {
@@ -106,7 +106,7 @@ describe('MQTT client connection test with a mock server', function () {
         expect([...suback.reasonCodes]).to.have.members([2]);
 
         server.closeClientConnection();
-        await delay(2000); // wait for 500ms, to reinitializes
+        await delay(500); // wait for 500ms, to reinitializes
         expect(resubscribed).to.true;
 
         const unsuback = await client.unsubscribe({topicFilters: ['subu/test/#']});
@@ -125,7 +125,7 @@ describe('MQTT client connection test with a mock server', function () {
             ]
         );
         server.setResponses(responses);
-        const client = new MQTTClient(testURLLocalhost, {timeout: 2000});
+        const client = new MQTTClient(testURLLocalhost, {timeout: 2000, initialReconnectDelay: 30});
         await client.connect({cleanStart: true, keepAlive: 0});
         await client.publish({topic: 'subu/test/1', payload: "foo", qos: 1});
         expect(() => client.disconnect()).to.not.throw();
@@ -144,7 +144,7 @@ describe('MQTT client connection test with a mock server', function () {
         );
         server.setResponses(responses);
 
-        const client = new MQTTClient(testURLLocalhost, {timeout: 2000});
+        const client = new MQTTClient(testURLLocalhost, {timeout: 2000, initialReconnectDelay: 30});
         await client.connect({cleanStart: true, keepAlive: 0});
         await client.publish({topic: 'subu/test/1', payload: "foo", qos: 2});
         expect(() => client.disconnect()).to.not.throw();
@@ -177,7 +177,7 @@ describe('MQTT client connection test with a mock server', function () {
             }
         }
 
-        const client = new MQTTClient(testURLLocalhost, {timeout: 2000});
+        const client = new MQTTClient(testURLLocalhost, {timeout: 2000, initialReconnectDelay: 30});
         await client.connect({cleanStart: true, keepAlive: 0});
 
         const subscriber = new TestSubscriber();
@@ -222,7 +222,7 @@ describe('MQTT client connection test with a mock server', function () {
             }
         }
 
-        const client = new MQTTClient(testURLLocalhost, {timeout: 2000});
+        const client = new MQTTClient(testURLLocalhost, {timeout: 2000, initialReconnectDelay: 30});
         await client.connect({cleanStart: true, keepAlive: 0});
 
         const subscriber = new TestSubscriber();
@@ -271,7 +271,7 @@ describe('MQTT client connection test with a mock server', function () {
             }
         }
 
-        const client = new MQTTClient(testURLLocalhost, {timeout: 2000});
+        const client = new MQTTClient(testURLLocalhost, {timeout: 2000, initialReconnectDelay: 30});
         await client.connect({cleanStart: true, keepAlive: 0});
 
         const subscriber = new TestSubscriber();
@@ -308,7 +308,7 @@ describe('MQTT client connection test with a mock server', function () {
 
         server.setResponses(responses);
 
-        const client = new MQTTClient(testURLLocalhost, {timeout: 2000});
+        const client = new MQTTClient(testURLLocalhost, {timeout: 2000, initialReconnectDelay: 30});
         await client.connect({cleanStart: true, keepAlive: 0});
 
         const totalPublish = 80;
@@ -340,7 +340,7 @@ describe('MQTT client connection test with a mock server', function () {
 
         server.setResponses(responses);
 
-        const client = new MQTTClient(testURLLocalhost, {timeout: 2000});
+        const client = new MQTTClient(testURLLocalhost, {timeout: 2000, initialReconnectDelay: 30});
         await client.connect({cleanStart: true, keepAlive: 0});
 
         const totalPublish = 80;
@@ -355,5 +355,21 @@ describe('MQTT client connection test with a mock server', function () {
 
         expect(() => client.disconnect()).to.not.throw();
         server.stop();
+    });
+
+    it('Simple MQTT Client - Close client in disconnected state', async () => {
+        const server: testMockServer = new testMockServer({
+            sessionPresent: true, reasonCode: MQTTConnAckReason.Code.Success, properties: {receiveMaximum: 8}
+        }, 30);
+        server.start();
+
+        const client = new MQTTClient(testURLLocalhost, {timeout: 2000, initialReconnectDelay: 30});
+        await client.connect({cleanStart: true, keepAlive: 0});
+
+        // stop the server
+        server.stop();
+        await delay(500); // wait for 500ms, to reinitializes
+
+        expect(() => client.disconnect()).to.not.throw();
     });
 });

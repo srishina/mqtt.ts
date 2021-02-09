@@ -14,7 +14,10 @@ import {MQTTStatstics} from "../utils/constants";
 import {Options} from "./options";
 
 const defaultOpts = {
-    timeout: 2000
+    timeout: 2000,
+    initialReconnectDelay: 1000, // 1 sec
+    maxReconnectDelay: 32000, // 32 sec
+    jitter: 0.5,
 };
 
 /**

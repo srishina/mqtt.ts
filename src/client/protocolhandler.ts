@@ -179,6 +179,7 @@ export class ProtocolHandler implements PingerCallback {
     private pendingQoS0Pkts: PublishPacket[];
 
     private backoff: ExponentialBackoff;
+    private reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 
     constructor(uri: string, options: Options, emitter: TypedEventEmitter<MessageEvents>) {
         this.eventEmitter = emitter;
@@ -259,6 +260,10 @@ export class ProtocolHandler implements PingerCallback {
         this.remainingBuffer = undefined;
         this.connected = false;
         this.pendingQoS12Pkts = [];
+        // cancel the reconenct timer
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+        }
     }
 
     internalDisconnect(e: Error): void | never {
@@ -266,7 +271,7 @@ export class ProtocolHandler implements PingerCallback {
         this.eventEmitter.emit("disconnected", new Error("Connection lost"));
         let nextRetryInterval = this.backoff.next()
         // reconnect if needed
-        setTimeout(() => {
+        this.reconnectTimer = setTimeout(() => {
             this.reconnect();
         }, nextRetryInterval);
         this.trace(`Connection failed with error ${e.message}, will retry after " + ${nextRetryInterval / 1000} + " secs`);
@@ -285,6 +290,7 @@ export class ProtocolHandler implements PingerCallback {
                 this.reconnecting = false;
                 this.eventEmitter.emit("reconnected", result);
                 this.mqttConnAck = result;
+                this.reconnectTimer = undefined;
                 this.drainPendingPkts();
             }).catch((error) => {
                 this.backoff.next()
@@ -634,7 +640,6 @@ export class ProtocolHandler implements PingerCallback {
     }
 
     private publishReceived(pktID: number, msg: MQTTPublish) {
-        // console.log(msg.dup + " " + msg.qos);
         switch (msg.qos) {
             case 0:
                 this.notifyPublishMessage(msg);
@@ -786,7 +791,6 @@ export class ProtocolHandler implements PingerCallback {
             this.eventEmitter.emit("disconnected", e);
             if (e instanceof ServerDisconnectedError) {
                 // Server sent DISCONNECT packet
-                // console.log(e.getMessageWithDescription());
                 this.trace(e.getMessageWithDescription());
             } else {
                 this.trace(e.message);
