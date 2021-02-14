@@ -79,9 +79,9 @@ Note: The topic alias can be changed. Before changing, it is important that, the
 
 The client library supports reconnecting and automatically resubscribe / publish the pending messages.
 
-MQTTv5 supports the possibility to set whether the session that is initiated with the broker should be clean or a continuation of the last session. In the later case, the session unique identifier is used. The specification also provides an extra property through which the client or the broker can decide how long a session should be kept. The client can set a session expiry interval. However, if the browser specifies a session expiry interval then that value takes precedence. If the client or broker does not specify session expiry interval then the session state is lost when the network connection is dropped.
+MQTTv5 supports the possibility to set whether the session that is initiated with the broker should be clean or a continuation of the last session. In the later case, the session unique identifier is used. The specification also provides an extra property through which the client or the broker can decide how long a session should be kept. The client can set a session expiry interval. However, if the broker specifies a session expiry interval then that value takes precedence. If the client or broker does not specify session expiry interval then the session state is lost when the network connection is dropped.
 
-So in sumamry, clean start + the session expiry interval + the connack response from the broker determines how the client reconnects.
+So in summary, clean start + the session expiry interval + the connack response from the broker determines how the client reconnects.
 
 The library operates as below:
 
