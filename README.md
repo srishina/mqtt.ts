@@ -10,6 +10,7 @@ The library uses websocket as network transport, no other network transports are
 The below command produces necessary artifacts to run in browser and node environment. A browser demo with UI has been provided in demo folder.
 
 ```bash
+npm install
 npm run build
 ```
 
