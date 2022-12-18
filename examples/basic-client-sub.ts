@@ -27,6 +27,7 @@ async function run() {
         console.log("Failed to connect, error: " + err);
     });
     if (client) {
+        console.log("Press Ctrl-C to quit!")
         try {
             const s: mqttv5.MQTTSubscription = {topicFilter: opts.topicFilter, qos: opts.qos};
             const suback = await client.subscribe({subscriptions: [s]}, new TestSubscriber());

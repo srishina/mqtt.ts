@@ -17,6 +17,7 @@ async function run() {
         console.log("Failed to connect, error: " + err);
     });
     if (result) {
+        console.log("MQTT Client connected successfully")
         client.disconnect();
     }
 }

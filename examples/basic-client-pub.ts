@@ -20,7 +20,9 @@ async function run() {
         console.log("Failed to connect, error: " + err);
     });
     if (client) {
-        await client.publish({topic: opts.topic, payload: opts.payload, qos: opts.qos}).catch(err => {
+        await client.publish({topic: opts.topic, payload: opts.payload, qos: opts.qos}).then(() => {
+            console.log("Message published successfully");
+        }).catch(err => {
             console.log("Failed to publish, error: " + err);
         });
         client.disconnect();
