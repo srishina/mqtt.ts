@@ -19,7 +19,7 @@ To run in browser:
 cd ./dist.browser.demo
 ```
 
-Run the index.html in broker. The UI has the possibility to connect to a broker, subscribe/publish to MQTT messages or try out MQTTv5 properties.
+Run the index.html in a browser. The UI has the possibility to connect to a broker, subscribe/publish to MQTT messages or try out MQTTv5 properties.
 The demo uses bootstrap 4 and jquery as dependent components.
 
 Try out the examples:
