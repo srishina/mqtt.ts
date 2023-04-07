@@ -1,6 +1,6 @@
-import {decodeMQTTPublishResponse, PublishResponsePacket} from "./packet"
-import type { DataStreamEncoder, DataStreamDecoder} from "../utils/codec"
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty} from "../utils/codec"
+import {decodeMQTTPublishResponse, PublishResponsePacket} from './packet'
+import type { DataStreamEncoder, DataStreamDecoder} from '../utils/codec'
+import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty} from '../utils/codec'
 import {PacketType, PropertyID, MQTTCommonReasonCode, getCommonReasonCodeName} from '../utils/constants'
 
 export namespace MQTTPubAckReason {
@@ -28,19 +28,19 @@ export namespace MQTTPubAckReason {
         [Code.PayloadFormatInvalid, getCommonReasonCodeName(MQTTCommonReasonCode.PayloadFormatInvalid)],
     ])
     export const Description = new Map<Code, string>([
-        [Code.Success, "The message is accepted. Publication of the QoS 1 message proceeds."],
+        [Code.Success, 'The message is accepted. Publication of the QoS 1 message proceeds.'],
         [Code.NoMatchingSubscribers, `The message is accepted but there are no subscribers. This 
                                     is sent only by the Server. If the Server knows that there 
                                     are no matching subscribers, it MAY use this Reason Code instead of 0x00 (Success).`],
         [Code.UnspecifiedError, `The receiver does not accept the publish but either does not want to reveal
                                 the reason, or it does not match one of the other values.`],
-        [Code.ImplSpecificError, "The PUBLISH is valid but the receiver is not willing to accept it."],
-        [Code.NotAuthorized, "The PUBLISH is not authorized."],
-        [Code.TopicNameInvalid, "The Topic Name is not malformed, but is not accepted by this Client or Server."],
+        [Code.ImplSpecificError, 'The PUBLISH is valid but the receiver is not willing to accept it.'],
+        [Code.NotAuthorized, 'The PUBLISH is not authorized.'],
+        [Code.TopicNameInvalid, 'The Topic Name is not malformed, but is not accepted by this Client or Server.'],
         [Code.PacketIdentifierInUse, `The Packet Identifier is already in use. This might indicate a
                                         mismatch in the Session State between the Client and Server.`],
-        [Code.QuotaExceeded, "An implementation or administrative imposed limit has been exceeded."],
-        [Code.PayloadFormatInvalid, "The payload format does not match the specified Payload Format Indicator."],
+        [Code.QuotaExceeded, 'An implementation or administrative imposed limit has been exceeded.'],
+        [Code.PayloadFormatInvalid, 'The payload format does not match the specified Payload Format Indicator.'],
     ])
 }
 

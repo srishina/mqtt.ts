@@ -24,7 +24,7 @@ export class DecoderError extends Error {
 
 export class ServerSessionContinuityNotAvailable extends Error {
     constructor() {
-        super("Session does not support session continuity")
+        super('Session does not support session continuity')
         Object.setPrototypeOf(this, new.target.prototype)
         this.name = DecoderError.name
     }

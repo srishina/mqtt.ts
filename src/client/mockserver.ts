@@ -1,23 +1,23 @@
-import { DataStreamDecoder, encodedVarUint32Size } from "../utils/codec"
+import { DataStreamDecoder, encodedVarUint32Size } from '../utils/codec'
 import * as WebSocket from 'ws'
 import { PacketType } from '../utils/constants'
-import type { MQTTConnAck } from "../message/connack"
-import { encodeConnAckPacket } from "../message/connack"
-import type { MQTTSubAck} from "../message/subscribe"
-import { decodeSubscribePacket, SubAckPacket } from "../message/subscribe"
-import type { MQTTUnsubAck} from "../message/unsubscribe"
-import { decodeUnsubAckPacket, UnsubAckPacket } from "../message/unsubscribe"
-import type { MQTTPublish} from "../message/publish"
-import { decodePublishPacket, MQTTPublishPacket } from "../message/publish"
-import type { MQTTPubAck} from "../message/puback"
-import { MQTTPubAckPacket, decodePubAckPacket } from "../message/puback"
-import type { MQTTPubRec} from "../message/pubrec"
-import { MQTTPubRecPacket, decodePubRecPacket } from "../message/pubrec"
-import type { MQTTPubComp} from "../message/pubcomp"
-import { MQTTPubCompPacket, decodePubCompPacket } from "../message/pubcomp"
-import type { MQTTPubRel} from "../message/pubrel"
-import { decodePubRelPacket, MQTTPubRelPacket } from "../message/pubrel"
-import type { PacketWithID } from "../message/packet"
+import type { MQTTConnAck } from '../message/connack'
+import { encodeConnAckPacket } from '../message/connack'
+import type { MQTTSubAck} from '../message/subscribe'
+import { decodeSubscribePacket, SubAckPacket } from '../message/subscribe'
+import type { MQTTUnsubAck} from '../message/unsubscribe'
+import { decodeUnsubAckPacket, UnsubAckPacket } from '../message/unsubscribe'
+import type { MQTTPublish} from '../message/publish'
+import { decodePublishPacket, MQTTPublishPacket } from '../message/publish'
+import type { MQTTPubAck} from '../message/puback'
+import { MQTTPubAckPacket, decodePubAckPacket } from '../message/puback'
+import type { MQTTPubRec} from '../message/pubrec'
+import { MQTTPubRecPacket, decodePubRecPacket } from '../message/pubrec'
+import type { MQTTPubComp} from '../message/pubcomp'
+import { MQTTPubCompPacket, decodePubCompPacket } from '../message/pubcomp'
+import type { MQTTPubRel} from '../message/pubrel'
+import { decodePubRelPacket, MQTTPubRelPacket } from '../message/pubrel'
+import type { PacketWithID } from '../message/packet'
 
 export class testMockServer {
     private port = 3000;
@@ -77,7 +77,7 @@ export class testMockServer {
             const respPkt = new objectType(pktID, resp as MQTTP)
             this.conn.send(respPkt.build())
         } else {
-            throw new Error("MOCK server - internal error")
+            throw new Error('MOCK server - internal error')
         }
     }
 
@@ -165,7 +165,7 @@ export class testMockServer {
             case PacketType.PUBACK: {
                 const { pktID } = decodePubAckPacket(byte0, dec)
                 if (pktID == 0) {
-                    throw new Error("MOCK server - internal error, invalid pkt id received for PUBACK")
+                    throw new Error('MOCK server - internal error, invalid pkt id received for PUBACK')
                 }
                 this.publishAckd = true
                 break
@@ -186,14 +186,14 @@ export class testMockServer {
             case PacketType.PUBCOMP: {
                 const { pktID } = decodePubCompPacket(byte0, dec)
                 if (pktID == 0) {
-                    throw new Error("MOCK server - internal error, invalid pkt id received for PUBCOMP")
+                    throw new Error('MOCK server - internal error, invalid pkt id received for PUBCOMP')
                 }
                 this.publishAckd = true
                 break
             }
 
             default:
-                throw new Error("MOCK server - internal error")
+                throw new Error('MOCK server - internal error')
         }
     }
 

@@ -20,8 +20,8 @@ describe('MQTT PUBLISH basic test', () => {
             0x57, 0x65, 0x6C, 0x63, 0x6F, 0x6D, 0x65, 0x21,
         ])
 
-        const topic = "a/b"
-        const payload = "Welcome!"
+        const topic = 'a/b'
+        const payload = 'Welcome!'
         const pub: MQTTPublish = {dup: true, qos: 1, retain: true, topic: topic, payload: payload}
         expect(new MQTTPublishPacket(18, pub).build()).to.eql(encoded)
 
@@ -51,8 +51,8 @@ describe('MQTT PUBLISH basic test', () => {
             0x57, 0x65, 0x6C, 0x63, 0x6F, 0x6D, 0x65, 0x21,
         ])
 
-        const topic = "a/b"
-        const payload = "Welcome!"
+        const topic = 'a/b'
+        const payload = 'Welcome!'
         const pub: MQTTPublish = {dup: true, qos: 2, retain: true, topic: topic, properties: {topicAlias: topicAliasID}, payload: payload}
         expect(new MQTTPublishPacket(identifer, pub).build()).to.eql(encoded)
 
@@ -78,8 +78,8 @@ describe('MQTT PUBLISH basic test', () => {
             0x57, 0x65, 0x6C, 0x63, 0x6F, 0x6D, 0x65, 0x21,
         ])
 
-        const topic = "a/b"
-        const payload = "Welcome!"
+        const topic = 'a/b'
+        const payload = 'Welcome!'
         const pub: MQTTPublish = {retain: true, topic: topic, payload: payload}
         expect(new MQTTPublishPacket(18, pub).build()).to.eql(encoded)
 
@@ -106,8 +106,8 @@ describe('MQTT PUBLISH basic test', () => {
             0x57, 0x65, 0x6C, 0x63, 0x6F, 0x6D, 0x65, 0x21,
         ])
 
-        const topic = "a/b"
-        const payload = "Welcome!"
+        const topic = 'a/b'
+        const payload = 'Welcome!'
         const pub: MQTTPublish = {retain: true, topic: topic, properties: {topicAlias: topicAliasID}, payload: payload}
         expect(new MQTTPublishPacket(18, pub).build()).to.eql(encoded)
     })
@@ -129,11 +129,11 @@ describe('MQTT PUBLISH basic test', () => {
         ])
 
         const userProperty: Map<string, string> = new Map([
-            ["a", "2"],
-            ["c", "4"],
+            ['a', '2'],
+            ['c', '4'],
         ])
-        const topic = "a/b"
-        const payload = "Welcome!"
+        const topic = 'a/b'
+        const payload = 'Welcome!'
         const pub: MQTTPublish = {retain: true, topic: topic, payload: payload, properties: {userProperty: userProperty}}
         expect(new MQTTPublishPacket(18, pub).build()).to.eql(encoded)
     })

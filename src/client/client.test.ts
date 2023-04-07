@@ -3,14 +3,14 @@ import { MQTTClient } from './client'
 import * as chai from 'chai'
 
 import * as chaiAsPromised from 'chai-as-promised'
-import { Deferred } from "../utils/codec"
-import type { MQTTPublish} from "../message/publish"
-import { getPayloadAsString } from "../message/publish"
+import { Deferred } from '../utils/codec'
+import type { MQTTPublish} from '../message/publish'
+import { getPayloadAsString } from '../message/publish'
 import type { MQTTSubAck, MQTTSubscription } from '../message/subscribe'
 import { MQTTSubAckReason } from '../message/subscribe'
 import { MQTTConnAckReason } from '../message/connack'
 import type { Subscriber } from './protocolhandler'
-import { testMockServer } from "./mockserver"
+import { testMockServer } from './mockserver'
 import { PacketType } from '../utils/constants'
 import type { MQTTSubscribe } from '../message/subscribe'
 import type { MQTTUnsubAck} from '../message/unsubscribe'
@@ -28,7 +28,7 @@ import type { ResubscribeResult } from './eventhandler'
 chai.use(chaiAsPromised)
 const expect = chai.expect
 
-const testURLLocalhost = "ws://localhost:3000"
+const testURLLocalhost = 'ws://localhost:3000'
 
 function delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms))
@@ -98,11 +98,11 @@ describe('MQTT client connection test with a mock server', function () {
         let resubscribed = false
         const client = new MQTTClient(testURLLocalhost, { timeout: 2000, initialReconnectDelay: 30 })
         await client.connect({ cleanStart: true, keepAlive: 0 })
-        client.on("resubscription", (subscribe: MQTTSubscribe, result: ResubscribeResult) => {
+        client.on('resubscription', (subscribe: MQTTSubscribe, result: ResubscribeResult) => {
             if (result.suback) {
                 resubscribed = true
             } else {
-                expect.fail("Resubscription resulted in an error")
+                expect.fail('Resubscription resulted in an error')
             }
         })
         const subscriber = new TestSubscriber()
@@ -133,7 +133,7 @@ describe('MQTT client connection test with a mock server', function () {
         server.setResponses(responses)
         const client = new MQTTClient(testURLLocalhost, { timeout: 2000, initialReconnectDelay: 30 })
         await client.connect({ cleanStart: true, keepAlive: 0 })
-        await client.publish({ topic: 'subu/test/1', payload: "foo", qos: 1 })
+        await client.publish({ topic: 'subu/test/1', payload: 'foo', qos: 1 })
         expect(() => client.disconnect()).to.not.throw()
         server.stop()
     })
@@ -152,7 +152,7 @@ describe('MQTT client connection test with a mock server', function () {
 
         const client = new MQTTClient(testURLLocalhost, { timeout: 2000, initialReconnectDelay: 30 })
         await client.connect({ cleanStart: true, keepAlive: 0 })
-        await client.publish({ topic: 'subu/test/1', payload: "foo", qos: 2 })
+        await client.publish({ topic: 'subu/test/1', payload: 'foo', qos: 2 })
         expect(() => client.disconnect()).to.not.throw()
         server.stop()
     })
@@ -161,7 +161,7 @@ describe('MQTT client connection test with a mock server', function () {
         const server: testMockServer = new testMockServer({ sessionPresent: false, reasonCode: MQTTConnAckReason.Code.Success })
         server.start()
 
-        const mqttPublish = { topic: 'subu/test/1', payload: "foo" }
+        const mqttPublish = { topic: 'subu/test/1', payload: 'foo' }
         const responses = new Map<PacketType, MQTTPublish | MQTTSubAck | MQTTUnsubAck>(
             [
                 [PacketType.SUBACK, { reasonCodes: [MQTTSubAckReason.Code.GrantedQoS2] }],
@@ -206,7 +206,7 @@ describe('MQTT client connection test with a mock server', function () {
         const server: testMockServer = new testMockServer({ sessionPresent: false, reasonCode: MQTTConnAckReason.Code.Success })
         server.start()
 
-        const mqttPublish = { topic: 'subu/test/1', payload: "foo", qos: 1 }
+        const mqttPublish = { topic: 'subu/test/1', payload: 'foo', qos: 1 }
         const responses = new Map<PacketType, MQTTPublish | MQTTSubAck | MQTTUnsubAck>(
             [
                 [PacketType.SUBACK, { reasonCodes: [MQTTSubAckReason.Code.GrantedQoS2] }],
@@ -254,7 +254,7 @@ describe('MQTT client connection test with a mock server', function () {
         const server: testMockServer = new testMockServer({ sessionPresent: false, reasonCode: MQTTConnAckReason.Code.Success })
         server.start()
 
-        const mqttPublish = { topic: 'subu/test/1', payload: "foo", qos: 2 }
+        const mqttPublish = { topic: 'subu/test/1', payload: 'foo', qos: 2 }
         const responses = new Map<PacketType, MQTTPublish | MQTTSubAck | MQTTUnsubAck | MQTTPubRel>(
             [
                 [PacketType.SUBACK, { reasonCodes: [MQTTSubAckReason.Code.GrantedQoS2] }],
@@ -320,7 +320,7 @@ describe('MQTT client connection test with a mock server', function () {
         const totalPublish = 80
         const promises: Promise<void>[] = []
         for (let i = 0; i < totalPublish; i++) {
-            promises.push(client.publish({ topic: 'TEST/GREETING', payload: "Hello world " + " " + i, qos: 2 }))
+            promises.push(client.publish({ topic: 'TEST/GREETING', payload: 'Hello world ' + ' ' + i, qos: 2 }))
         }
 
         await Promise.all(promises).then((values) => {
@@ -352,7 +352,7 @@ describe('MQTT client connection test with a mock server', function () {
         const totalPublish = 80
         const promises: Promise<void>[] = []
         for (let i = 0; i < totalPublish; i++) {
-            promises.push(client.publish({ topic: 'TEST/GREETING', payload: "Hello world " + " " + i, qos: 2 }))
+            promises.push(client.publish({ topic: 'TEST/GREETING', payload: 'Hello world ' + ' ' + i, qos: 2 }))
         }
 
         await Promise.all(promises).then((values) => {

@@ -1,5 +1,5 @@
-import {DecoderError} from "../client/errors"
-import {getPropertyText} from "./constants"
+import {DecoderError} from '../client/errors'
+import {getPropertyText} from './constants'
 
 export class DataStreamDecoder {
     private dataView: DataView;
@@ -69,7 +69,7 @@ export class DataStreamDecoder {
             const bt = this.dataView.getUint8(pos++)
             value += (bt & 0x7F) * multiplier
             if (multiplier > 128 * 128 * 128) {
-                throw new DecoderError("Variable integer contains value which is more than the permissible")
+                throw new DecoderError('Variable integer contains value which is more than the permissible')
             }
 
             if ((bt & 0x80) == 0) {
@@ -96,7 +96,7 @@ export class DataStreamDecoder {
 
             multiplier *= 128
             if (multiplier > 128 * 128 * 128) {
-                throw new DecoderError("Variable integer contains value which is more than the permissible")
+                throw new DecoderError('Variable integer contains value which is more than the permissible')
             }
         }
 
@@ -182,7 +182,7 @@ export class DataStreamEncoder {
 
     public encodeVarUint32(u32: number): void | never {
         if (u32 > 268435455) {
-            throw new DecoderError("Variable integer contains value which is more than the permissible")
+            throw new DecoderError('Variable integer contains value which is more than the permissible')
         }
 
         const numBytes = 0
@@ -367,7 +367,7 @@ export abstract class PropertyEncoderIfNotEmpty {
 }
 
 export function throwMoreThanOnce(id: number): void | never {
-    throw new Error(getPropertyText(id) + " must not be included more than once")
+    throw new Error(getPropertyText(id) + ' must not be included more than once')
 }
 
 export abstract class PropertyDecoderOnlyOnce {
@@ -385,7 +385,7 @@ export abstract class PropertyDecoderOnlyOnce {
         }
         const b = dec.decodeByte()
         if (b != 0 && b != 1) {
-            throw new Error("Wrong " + getPropertyText(id) + " must be 1 or 0, got " + b)
+            throw new Error('Wrong ' + getPropertyText(id) + ' must be 1 or 0, got ' + b)
         }
         return (b != 0)
     }
@@ -447,7 +447,7 @@ export class PIDGenerator {
 
     public nextID(): number | never {
         if (this.usedIDs.size >= PIDGenerator.maxValue) {
-            throw new Error("All packet IDs are in use.")
+            throw new Error('All packet IDs are in use.')
         }
 
         for (; ;) {
@@ -490,7 +490,7 @@ export class Deferred<T> {
             this.resolveSelf(value)
         }
         else {
-            throw new Error("Attempt to resolve on undefined")
+            throw new Error('Attempt to resolve on undefined')
         }
     }
 
@@ -500,7 +500,7 @@ export class Deferred<T> {
             this.rejectSelf(reason)
         }
         else {
-            throw new Error("Attempt to reject on undefined")
+            throw new Error('Attempt to reject on undefined')
         }
     }
     /* eslint-enable @typescript-eslint/explicit-module-boundary-types */

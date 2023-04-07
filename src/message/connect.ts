@@ -1,8 +1,8 @@
-import type { DataStreamDecoder} from "../utils/codec"
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from "../utils/codec"
+import type { DataStreamDecoder} from '../utils/codec'
+import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from '../utils/codec'
 import {PacketType, PropertyID} from '../utils/constants'
 import {DecoderError} from '../client/errors'
-import {getPayloadAsArray} from "./publish"
+import {getPayloadAsArray} from './publish'
 
 export type MQTTConnectProperties = {
     sessionExpiryInterval?: number;
@@ -164,7 +164,7 @@ export function encodeConnectPacket(msg: MQTTConnect): Uint8Array | never {
     encodeProperties(encoder, propertyLen)
 
     // encode client identifier
-    encoder.encodeUTF8String(msg.clientIdentifier ? msg.clientIdentifier : "")
+    encoder.encodeUTF8String(msg.clientIdentifier ? msg.clientIdentifier : '')
 
     // encode will topic, payload
     if (msg.willTopic && willPayloadArray) {
@@ -185,13 +185,13 @@ export function encodeConnectPacket(msg: MQTTConnect): Uint8Array | never {
 
 export function decodeConnectPacket(dec: DataStreamDecoder): MQTTConnect | never {
     const name = dec.decodeUTF8String()
-    if (name !== "MQTT") {
-        throw new Error("Invalid protocol name in CONNECT packet")
+    if (name !== 'MQTT') {
+        throw new Error('Invalid protocol name in CONNECT packet')
     }
 
     const version = dec.decodeByte()
     if (version != 0x05) {
-        throw new Error("Invalid protocol version in CONNECT packet")
+        throw new Error('Invalid protocol version in CONNECT packet')
     }
     const connectFlag = dec.decodeByte()
 
@@ -252,7 +252,7 @@ export function decodeConnectPacket(dec: DataStreamDecoder): MQTTConnect | never
                 propertyLen -= (data.properties.authenticationData.length + 2)
                 break
             default:
-                throw new DecoderError("CONNECT: wrong property with identifier " + id)
+                throw new DecoderError('CONNECT: wrong property with identifier ' + id)
         }
     }
 

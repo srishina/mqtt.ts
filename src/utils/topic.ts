@@ -4,8 +4,8 @@ export function isPublishTopicValid(topic: string): boolean {
     if (topic.length > 65535) {
         return false
     }
-    const restricted = "+#"
-    return !topic.split("").some(ch => restricted.includes(ch))
+    const restricted = '+#'
+    return !topic.split('').some(ch => restricted.includes(ch))
 }
 
 export function isSubscribeTopicValid(topic: string): boolean {
@@ -101,7 +101,7 @@ export class TopicMatcher<T> {
 
     public subscribe(topic: string, subscriber: Observer<T>): void | never {
         if (!isSubscribeTopicValid(topic)) {
-            throw new Error("Subscribe topic is invalid")
+            throw new Error('Subscribe topic is invalid')
         }
 
         let cur = this.root
@@ -120,7 +120,7 @@ export class TopicMatcher<T> {
 
     public unsubscribe(topic: string): void | never {
         if (!isSubscribeTopicValid(topic)) {
-            throw new Error("Unsubscribe topic is invalid")
+            throw new Error('Unsubscribe topic is invalid')
         }
 
         let cur = this.root
@@ -143,16 +143,16 @@ export class TopicMatcher<T> {
 
     public match(topic: string): Observer<T>[] | never {
         if (!isPublishTopicValid(topic)) {
-            throw new Error("Publish topic is invalid")
+            throw new Error('Publish topic is invalid')
         }
 
-        return this.matchInternal(topic.split("/"), this.root)
+        return this.matchInternal(topic.split('/'), this.root)
     }
 
     private matchInternal(parts: string[], node: Node<T>): Observer<T>[] {
         const subscribers: Observer<T>[] = []
         // "foo/#” also matches the singular "foo", since # includes the parent level.
-        let child = node.getChildren("#")
+        let child = node.getChildren('#')
         if (child && child.observer) {
             subscribers.push(child.observer)
         }
@@ -162,7 +162,7 @@ export class TopicMatcher<T> {
             return subscribers
         }
 
-        child = node.getChildren("+")
+        child = node.getChildren('+')
         if (child) {
             // found +, check it is the last part
             // from MQTTv5 spec

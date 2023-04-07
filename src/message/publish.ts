@@ -1,11 +1,11 @@
-import {PacketWithID} from "./packet"
-import type { DataStreamDecoder} from "../utils/codec"
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from "../utils/codec"
+import {PacketWithID} from './packet'
+import type { DataStreamDecoder} from '../utils/codec'
+import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from '../utils/codec'
 import {getPropertyText, PacketType, PropertyID} from '../utils/constants'
-import {DecoderError} from "../client/errors"
+import {DecoderError} from '../client/errors'
 
 export function getPayloadAsArray(payload: Uint8Array | string): Uint8Array {
-    if (typeof payload === "string") {
+    if (typeof payload === 'string') {
         const utf8Enc = new TextEncoder()
         return utf8Enc.encode(payload)
     }
@@ -13,7 +13,7 @@ export function getPayloadAsArray(payload: Uint8Array | string): Uint8Array {
 }
 
 export function getPayloadAsString(payload: Uint8Array | string): string {
-    if (typeof payload === "string") {
+    if (typeof payload === 'string') {
         return payload
     }
     const utf8Dec = new TextDecoder()
@@ -43,11 +43,11 @@ export type MQTTPublish = {
 
 function validateFlags(msg: MQTTPublish): void | never {
     if (msg.qos && msg.qos == 0 && msg.dup) {
-        throw new Error("invalid publish flags - Malformed packet")
+        throw new Error('invalid publish flags - Malformed packet')
     }
 
     if (msg.qos && msg.qos > 2) {
-        throw new Error("invalid QoS flag- Malformed packet")
+        throw new Error('invalid QoS flag- Malformed packet')
     }
 }
 
@@ -202,7 +202,7 @@ export function decodePublishPacket(byte0: number, dec: DataStreamDecoder): {pkt
                 }
                 const v = dec.decodeVarUint32()
                 if (v == 0) {
-                    throw new Error(getPropertyText(id) + " must not be 0")
+                    throw new Error(getPropertyText(id) + ' must not be 0')
                 }
 
                 data.properties.subscriptionIdentifiers.push(v)
@@ -217,7 +217,7 @@ export function decodePublishPacket(byte0: number, dec: DataStreamDecoder): {pkt
             }
 
             default:
-                throw new DecoderError("PUBLISH: wrong property with identifier " + id)
+                throw new DecoderError('PUBLISH: wrong property with identifier ' + id)
         }
     }
 

@@ -1,6 +1,6 @@
-import {decodeMQTTPublishResponse, PublishResponsePacket} from "./packet"
-import type { DataStreamEncoder, DataStreamDecoder} from "../utils/codec"
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty} from "../utils/codec"
+import {decodeMQTTPublishResponse, PublishResponsePacket} from './packet'
+import type { DataStreamEncoder, DataStreamDecoder} from '../utils/codec'
+import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty} from '../utils/codec'
 import {PacketType, PropertyID, MQTTCommonReasonCode, getCommonReasonCodeName} from '../utils/constants'
 
 export namespace MQTTPubRelReason {
@@ -14,7 +14,7 @@ export namespace MQTTPubRelReason {
         [Code.PacketIdentifierNotFound, getCommonReasonCodeName(MQTTCommonReasonCode.PacketIdentifierNotFound)],
     ])
     export const Description = new Map<Code, string>([
-        [Code.Success, "The message is accepted. Publication of the QoS 1 message proceeds."],
+        [Code.Success, 'The message is accepted. Publication of the QoS 1 message proceeds.'],
         [Code.PacketIdentifierNotFound, `The Packet Identifier is not known. This is not an error
                                         during recovery, but at other times indicates a mismatch 
                                         between the Session State on the Client and Server. `],

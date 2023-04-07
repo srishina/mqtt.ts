@@ -5,42 +5,42 @@ let mqttClient: mqttv5.MQTTClient | undefined = undefined
 let statisticsTimer: ReturnType<typeof setInterval>
 
 $(function () {
-    $("#connect-btn").on('click', connect)
-    $("#subscribe-btn").on('click', subscribe)
-    $("#unsubscribe-btn").on('click', unsubscribe)
-    $("#publish-btn").on('click', publish)
+    $('#connect-btn').on('click', connect)
+    $('#subscribe-btn').on('click', subscribe)
+    $('#unsubscribe-btn').on('click', unsubscribe)
+    $('#publish-btn').on('click', publish)
 
-    $("#log-msg").on('click', '.clickable-row', () => {
-        $(".row-highlight").removeClass("row-highlight")
-        $(this).addClass("row-highlight")
+    $('#log-msg').on('click', '.clickable-row', () => {
+        $('.row-highlight').removeClass('row-highlight')
+        $(this).addClass('row-highlight')
     })
 
-    $("#log-msg").on('click', '.clickable-row', () => {
-        $(".row-highlight").removeClass("row-highlight")
-        $(this).addClass("row-highlight")
+    $('#log-msg').on('click', '.clickable-row', () => {
+        $('.row-highlight').removeClass('row-highlight')
+        $(this).addClass('row-highlight')
     })
 
-    $("#connection-collapse").on("shown.bs.collapse", () => {
-        const el = (<HTMLInputElement>document.getElementById("host-input"))
+    $('#connection-collapse').on('shown.bs.collapse', () => {
+        const el = (<HTMLInputElement>document.getElementById('host-input'))
         putCursorAtEnd(el)
     })
 
-    $("#subscribe-collapse").on("shown.bs.collapse", () => {
-        const el = (<HTMLInputElement>document.getElementById("subscribe-topic-input"))
+    $('#subscribe-collapse').on('shown.bs.collapse', () => {
+        const el = (<HTMLInputElement>document.getElementById('subscribe-topic-input'))
         putCursorAtEnd(el)
     })
 
-    $("#unsubscribe-collapse").on("shown.bs.collapse", () => {
-        const el = (<HTMLInputElement>document.getElementById("unsubscribe-topic-input"))
+    $('#unsubscribe-collapse').on('shown.bs.collapse', () => {
+        const el = (<HTMLInputElement>document.getElementById('unsubscribe-topic-input'))
         putCursorAtEnd(el)
     })
 
-    $("#publish-collapse").on("shown.bs.collapse", () => {
-        const el = (<HTMLInputElement>document.getElementById("publish-topic-input"))
+    $('#publish-collapse').on('shown.bs.collapse', () => {
+        const el = (<HTMLInputElement>document.getElementById('publish-topic-input'))
         putCursorAtEnd(el)
     })
 
-    logMessage("mqttv5 client is setup and started...")
+    logMessage('mqttv5 client is setup and started...')
 })
 
 function connect(): void {
@@ -48,10 +48,10 @@ function connect(): void {
         clearInterval(statisticsTimer)
         mqttClient.disconnect()
         mqttClient = undefined;
-        (<HTMLInputElement>document.querySelector('#connect-btn')).textContent = "Connect"
+        (<HTMLInputElement>document.querySelector('#connect-btn')).textContent = 'Connect'
     } else {
         onConnect();
-        (<HTMLInputElement>document.querySelector('#connect-btn')).textContent = "Disconnect"
+        (<HTMLInputElement>document.querySelector('#connect-btn')).textContent = 'Disconnect'
     }
 }
 
@@ -62,15 +62,15 @@ function logPublishMessages(table: HTMLTableElement, msg: mqttv5.MQTTPublish): v
     const rowCell3 = tableRow.insertCell()
 
     rowCell.appendChild(document.createTextNode(msg.topic))
-    rowCell2.appendChild(document.createTextNode(msg.qos ? msg.qos.toString() : ""))
+    rowCell2.appendChild(document.createTextNode(msg.qos ? msg.qos.toString() : ''))
     rowCell3.appendChild(document.createTextNode(mqttv5.getPayloadAsString(msg.payload)))
 }
 
 class DemoSubscriber implements mqttv5.Subscriber {
     onData(msg: mqttv5.MQTTPublish): void {
-        console.log("message receved " + msg)
+        console.log('message receved ' + msg)
         // do nothing
-        logPublishMessages((<HTMLTableElement>document.getElementById("recvd-msg-table")), msg)
+        logPublishMessages((<HTMLTableElement>document.getElementById('recvd-msg-table')), msg)
     }
 }
 
@@ -81,27 +81,27 @@ function subscribe(): void {
         return
     }
 
-    const topic = (<HTMLInputElement>document.getElementById("subscribe-topic-input")).value
-    const qos = (<HTMLInputElement>document.getElementById("subscribe-qos-input")).value
+    const topic = (<HTMLInputElement>document.getElementById('subscribe-topic-input')).value
+    const qos = (<HTMLInputElement>document.getElementById('subscribe-qos-input')).value
     const s: mqttv5.MQTTSubscription = {topicFilter: topic, qos: parseInt(qos)}
     const result = mqttClient.subscribe({subscriptions: [s]}, subscriber)
     // eslint-disable-next-line
     result.then((suback: mqttv5.MQTTSubAck) => {
-        logMessage("SUBSCRIBE successful")
+        logMessage('SUBSCRIBE successful')
         addSubscribedTopic(topic)
     },
         (reason) => {
-            logMessage("SUBSCRIBE failed " + reason)
+            logMessage('SUBSCRIBE failed ' + reason)
         })
 }
 
 function unsubscribe(): void {
-    const topic = (<HTMLInputElement>document.getElementById("unsubscribe-topic-input")).value
+    const topic = (<HTMLInputElement>document.getElementById('unsubscribe-topic-input')).value
     let unsubscribe: mqttv5.MQTTUnsubscribe = {topicFilters: []}
     if (topic.length > 0) {
         unsubscribe = {topicFilters: [topic]}
     } else {
-        const selected = $("#subscriptions-input").find("option:selected")
+        const selected = $('#subscriptions-input').find('option:selected')
         if (selected.length > 0) {
             selected.each((idx, val) => {
                 unsubscribe.topicFilters.push((<HTMLOptionElement>val).value)
@@ -116,11 +116,11 @@ function unsubscribe(): void {
         const result = mqttClient.unsubscribe(unsubscribe)
         // eslint-disable-next-line
         result.then((client: mqttv5.MQTTUnsubAck) => {
-            logMessage("UNSUBSCRIBE successful")
+            logMessage('UNSUBSCRIBE successful')
             removeSubscribedTopic(unsubscribe.topicFilters)
         },
             (reason) => {
-                logMessage("UNSUBSCRIBE failed " + reason)
+                logMessage('UNSUBSCRIBE failed ' + reason)
             })
     }
 }
@@ -130,24 +130,24 @@ function publish(): void {
         return
     }
 
-    const topic = (<HTMLInputElement>document.getElementById("publish-topic-input")).value
-    const qos = (<HTMLInputElement>document.getElementById("publish-qos-input")).value
-    const payload = (<HTMLInputElement>document.getElementById("publish-msg-input")).value
+    const topic = (<HTMLInputElement>document.getElementById('publish-topic-input')).value
+    const qos = (<HTMLInputElement>document.getElementById('publish-qos-input')).value
+    const payload = (<HTMLInputElement>document.getElementById('publish-msg-input')).value
 
     const mqttPublish: mqttv5.MQTTPublish = {topic: topic, qos: parseInt(qos), payload: payload}
 
     const result = mqttClient.publish(mqttPublish)
     result.then(() => {
-        logMessage("PUBLISH successful")
-        logPublishMessages((<HTMLTableElement>document.getElementById("sent-msg-table")), mqttPublish)
+        logMessage('PUBLISH successful')
+        logPublishMessages((<HTMLTableElement>document.getElementById('sent-msg-table')), mqttPublish)
     },
         (reason) => {
-            logMessage("PUBLISH failed " + reason)
+            logMessage('PUBLISH failed ' + reason)
         })
 }
 
 function onConnected(uri: string) {
-    const el = document.getElementById("connection-card-status-text")
+    const el = document.getElementById('connection-card-status-text')
     if (el) {
         el.innerHTML = `- Connected to ${uri}`
     }
@@ -155,25 +155,25 @@ function onConnected(uri: string) {
 
 // eslint-disable-next-line
 function onConnectionError(err?: any) {
-    const el = document.getElementById("connection-card-status-text")
+    const el = document.getElementById('connection-card-status-text')
     if (el) {
     el.innerHTML = `- Disconnected with ${err.message}`}
 }
 
 function onConnect(): void {
-    const host = (<HTMLInputElement>document.getElementById("host-input")).value
-    const port = (<HTMLInputElement>document.getElementById("port-input")).value
-    const path = (<HTMLInputElement>document.getElementById("path-input")).value
+    const host = (<HTMLInputElement>document.getElementById('host-input')).value
+    const port = (<HTMLInputElement>document.getElementById('port-input')).value
+    const path = (<HTMLInputElement>document.getElementById('path-input')).value
 
-    const url = "ws://" + host + ":" + parseInt(port) + path
+    const url = 'ws://' + host + ':' + parseInt(port) + path
 
-    const clientID = (<HTMLInputElement>document.getElementById("client-id-input")).value
+    const clientID = (<HTMLInputElement>document.getElementById('client-id-input')).value
 
-    const uname = (<HTMLInputElement>document.getElementById("uname-input")).value
-    const pwd = (<HTMLInputElement>document.getElementById("pwd-input")).value
+    const uname = (<HTMLInputElement>document.getElementById('uname-input')).value
+    const pwd = (<HTMLInputElement>document.getElementById('pwd-input')).value
 
-    const keepAlive = (<HTMLInputElement>document.getElementById("keep-alive-input")).value
-    const cleanSesssion = (<HTMLInputElement>document.getElementById("clean-session-input")).checked
+    const keepAlive = (<HTMLInputElement>document.getElementById('keep-alive-input')).value
+    const cleanSesssion = (<HTMLInputElement>document.getElementById('clean-session-input')).checked
 
     const mqttConnect: mqttv5.MQTTConnect = {keepAlive: parseInt(keepAlive), cleanStart: cleanSesssion}
     if (clientID.length > 0) {
@@ -190,15 +190,15 @@ function onConnect(): void {
 
     mqttClient = new mqttv5.MQTTClient(url, {timeout: 2000})
     // setup event handlers
-    mqttClient.on("logs", (entry: mqttv5.LogEntry) => {
+    mqttClient.on('logs', (entry: mqttv5.LogEntry) => {
         logMessage(entry.message)
     })
 
-    mqttClient.on("disconnected", (error: Error) => {
+    mqttClient.on('disconnected', (error: Error) => {
         onConnectionError(error)
     })
 
-    mqttClient.on("reconnecting", (msg: string) => {
+    mqttClient.on('reconnecting', (msg: string) => {
         logMessage(msg)
     })
 
@@ -234,9 +234,9 @@ function printStatistics(): void {
 function logMessage(msg: string): void {
     $('#log-msg').append(
         $('<div/>')
-            .addClass("col-lg-12 clickable-row")
-            .append("<span/>")
-            .text(msg).append("<hr>")
+            .addClass('col-lg-12 clickable-row')
+            .append('<span/>')
+            .text(msg).append('<hr>')
     )
 }
 
@@ -248,14 +248,14 @@ function putCursorAtEnd(el: HTMLInputElement): void {
 
 function addSubscribedTopic(topic: string): void {
     // item already present, dont add again
-    const childs = $("#subscriptions-input").children('option')
+    const childs = $('#subscriptions-input').children('option')
     for (let i = 0; i < childs.length; ++i) {
         if (childs[i].innerHTML == topic) {
             return
         }
     }
 
-    const subscriptionsEl = $("#subscriptions-input")
+    const subscriptionsEl = $('#subscriptions-input')
     const opt = $('<option/>')
     opt.attr({'value': topic}).text(topic)
     subscriptionsEl.append(opt)
@@ -272,7 +272,7 @@ function removeSubscribedTopic(topic: string[]): void {
 
 function removeSelected(): void {
     $('#subscriptions-input option:selected').remove()
-    const subscriptionsEl = $("#subscriptions-input")
+    const subscriptionsEl = $('#subscriptions-input')
     changeSelectElementTitleIfNeeded(subscriptionsEl)
     subscriptionsEl.selectpicker('refresh')
 }

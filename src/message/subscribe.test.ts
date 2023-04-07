@@ -16,7 +16,7 @@ describe('MQTT SUBSCRIBE data model tests', () => {
             0x00, 0x05, 0x65, 0x2F, 0x66, 0x2F, 0x67, 0x00,
         ])
 
-        const topicFilters: string[] = ["a/b", "c/d", "e/f/g"]
+        const topicFilters: string[] = ['a/b', 'c/d', 'e/f/g']
 
         // with QoS 1
         const s: MQTTSubscription = {topicFilter: topicFilters[0], qos: 1}
@@ -42,7 +42,7 @@ describe('MQTT SUBSCRIBE data model tests', () => {
             0x00, 0x03, 0x61, 0x2F, 0x62, 0x01, // a/b with QoS 1
         ])
 
-        const topicFilters: string[] = ["a/b", "c/d", "e/f/g"]
+        const topicFilters: string[] = ['a/b', 'c/d', 'e/f/g']
 
         // with QoS 1
         const s: MQTTSubscription = {topicFilter: topicFilters[0], qos: 1}

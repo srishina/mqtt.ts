@@ -1,8 +1,8 @@
-import type { MQTTStatstics} from "../utils/constants"
-import { PacketType } from "../utils/constants"
-import { DataStreamDecoder, PIDGenerator, Deferred, encodedVarUint32Size } from "../utils/codec"
-import type { Observer} from "../utils/topic"
-import { TopicMatcher, isPublishTopicValid } from "../utils/topic"
+import type { MQTTStatstics} from '../utils/constants'
+import { PacketType } from '../utils/constants'
+import { DataStreamDecoder, PIDGenerator, Deferred, encodedVarUint32Size } from '../utils/codec'
+import type { Observer} from '../utils/topic'
+import { TopicMatcher, isPublishTopicValid } from '../utils/topic'
 
 // eslint-disable-next-line
 let WebSocket: any;
@@ -12,28 +12,28 @@ if (typeof window === 'undefined') {
     WebSocket = global.WebSocket
 }
 
-import { decodePublishPacket, MQTTPublishPacket } from "../message/publish"
-import { decodePubAckPacket, MQTTPubAckPacket, MQTTPubAckReason } from "../message/puback"
-import { decodePubRecPacket, MQTTPubRecPacket, MQTTPubRecReason } from "../message/pubrec"
-import { decodePubRelPacket, MQTTPubRelPacket, MQTTPubRelReason } from "../message/pubrel"
-import { decodePubCompPacket, MQTTPubCompPacket, MQTTPubCompReason } from "../message/pubcomp"
-import type { MQTTSubAck, MQTTSubscribe} from "../message/subscribe"
-import { decodeSubAckPacket, SubscribePacket } from "../message/subscribe"
-import type { MQTTUnsubAck, MQTTUnsubscribe} from "../message/unsubscribe"
-import { UnsubscribePacket, decodeUnsubAckPacket } from "../message/unsubscribe"
-import type { MQTTDisconnect} from "../message/disconnect"
-import { decodeDisconnectPacket, encodeDisconnectPacket, MQTTDisconnectReason } from "../message/disconnect"
-import type { MQTTConnect} from "../message/connect"
-import { encodeConnectPacket } from "../message/connect"
-import type { MQTTConnAck } from "../message/connack"
-import { decodeConnAckPacket } from "../message/connack"
-import type { MQTTPublish } from "../message/publish"
-import type { MessageEvents } from "./eventhandler"
-import type TypedEventEmitter from "typed-emitter"
-import { ServerDisconnectedError } from "./errors"
-import type { PacketWithID } from "../message/packet"
-import { buildHeaderOnlyPacket } from "../message/packet"
-import type { Options } from "./options"
+import { decodePublishPacket, MQTTPublishPacket } from '../message/publish'
+import { decodePubAckPacket, MQTTPubAckPacket, MQTTPubAckReason } from '../message/puback'
+import { decodePubRecPacket, MQTTPubRecPacket, MQTTPubRecReason } from '../message/pubrec'
+import { decodePubRelPacket, MQTTPubRelPacket, MQTTPubRelReason } from '../message/pubrel'
+import { decodePubCompPacket, MQTTPubCompPacket, MQTTPubCompReason } from '../message/pubcomp'
+import type { MQTTSubAck, MQTTSubscribe} from '../message/subscribe'
+import { decodeSubAckPacket, SubscribePacket } from '../message/subscribe'
+import type { MQTTUnsubAck, MQTTUnsubscribe} from '../message/unsubscribe'
+import { UnsubscribePacket, decodeUnsubAckPacket } from '../message/unsubscribe'
+import type { MQTTDisconnect} from '../message/disconnect'
+import { decodeDisconnectPacket, encodeDisconnectPacket, MQTTDisconnectReason } from '../message/disconnect'
+import type { MQTTConnect} from '../message/connect'
+import { encodeConnectPacket } from '../message/connect'
+import type { MQTTConnAck } from '../message/connack'
+import { decodeConnAckPacket } from '../message/connack'
+import type { MQTTPublish } from '../message/publish'
+import type { MessageEvents } from './eventhandler'
+import type TypedEventEmitter from 'typed-emitter'
+import { ServerDisconnectedError } from './errors'
+import type { PacketWithID } from '../message/packet'
+import { buildHeaderOnlyPacket } from '../message/packet'
+import type { Options } from './options'
 
 export type Subscriber = Observer<MQTTPublish>
 
@@ -76,7 +76,7 @@ class Pinger {
     doTimeout(): void {
         if (!this.isReset) {
             // Disconnect the client, we didn't receive PINGRESP
-            this.pingerCb.internalDisconnect(new Error("PINGRESP not received, disconnecting."))
+            this.pingerCb.internalDisconnect(new Error('PINGRESP not received, disconnecting.'))
 
         } else {
             this.isReset = false
@@ -229,8 +229,8 @@ export class ProtocolHandler implements PingerCallback {
         this.sendDisconnect(msg)
 
         this.clearLocalState()
-        this.trace("Disconnected error code: " + msg.reasonCode + " Desc: " + MQTTDisconnectReason.Name.get(msg.reasonCode))
-        this.eventEmitter.emit('disconnected', new Error("no error"))
+        this.trace('Disconnected error code: ' + msg.reasonCode + ' Desc: ' + MQTTDisconnectReason.Name.get(msg.reasonCode))
+        this.eventEmitter.emit('disconnected', new Error('no error'))
     }
 
     sendDisconnect(msg: MQTTDisconnect): void | never {
@@ -264,7 +264,7 @@ export class ProtocolHandler implements PingerCallback {
 
     internalDisconnect(e: Error): void | never {
         this.clearLocalState()
-        this.eventEmitter.emit("disconnected", new Error("Connection lost"))
+        this.eventEmitter.emit('disconnected', new Error('Connection lost'))
         const nextRetryInterval = this.backoff.next()
         // reconnect if needed
         this.reconnectTimer = setTimeout(() => {
@@ -279,12 +279,12 @@ export class ProtocolHandler implements PingerCallback {
         }
 
         if (!this.connected) {
-            this.eventEmitter.emit("reconnecting", "Trying to reconnect...")
+            this.eventEmitter.emit('reconnecting', 'Trying to reconnect...')
             this.reconnecting = true
             this.doConnect(this.options.timeout).then((result: MQTTConnAck) => {
                 this.backoff = new ExponentialBackoff(this.options.initialReconnectDelay, this.options.maxReconnectDelay, this.options.jitter)
                 this.reconnecting = false
-                this.eventEmitter.emit("reconnected", result)
+                this.eventEmitter.emit('reconnected', result)
                 this.mqttConnAck = result
                 this.reconnectTimer = undefined
                 this.drainPendingPkts()
@@ -297,9 +297,9 @@ export class ProtocolHandler implements PingerCallback {
 
     private doConnect(timeout: number): Promise<MQTTConnAck> {
         return new Promise((resolve, reject) => {
-            this.webSocket = new WebSocket(this.uri, ["mqtt"])
+            this.webSocket = new WebSocket(this.uri, ['mqtt'])
             if (!this.webSocket) {
-                reject(new Error("Error initialiting websocket object"))
+                reject(new Error('Error initialiting websocket object'))
                 return
             }
 
@@ -308,9 +308,9 @@ export class ProtocolHandler implements PingerCallback {
             this.webSocket.onclose = (event: CloseEvent) => {
                 let e: Error
                 if (event.code === 1000) {
-                    e = new Error("Websocket closed normally")
+                    e = new Error('Websocket closed normally')
                 } else {
-                    e = new Error("Websocket closed abnormally " + event.code)
+                    e = new Error('Websocket closed abnormally ' + event.code)
                     // reconnect
                     this.eventEmitter.emit('disconnected', e)
                 }
@@ -472,7 +472,7 @@ export class ProtocolHandler implements PingerCallback {
 
     sendPing(): void | never {
         this.websocketSend(buildHeaderOnlyPacket(PacketType.PINGREQ))
-        this.trace("send PINGREQ")
+        this.trace('send PINGREQ')
     }
 
     private completePublishMessage(id: number, error?: Error) {
@@ -510,7 +510,7 @@ export class ProtocolHandler implements PingerCallback {
     sendPublish(msg: MQTTPublish): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             if (!isPublishTopicValid(msg.topic)) {
-                throw new Error("Publish topic is invalid")
+                throw new Error('Publish topic is invalid')
             }
 
             let topicAlias: number | undefined = undefined
@@ -519,7 +519,7 @@ export class ProtocolHandler implements PingerCallback {
             }
 
             if (!topicAlias && msg.topic.length == 0) {
-                throw new Error("Publish topic is invalid")
+                throw new Error('Publish topic is invalid')
             }
 
             // check if topic alias has been set
@@ -603,11 +603,11 @@ export class ProtocolHandler implements PingerCallback {
                     // we are resubscribed, inform the client todo... emit resubscribe
                     // store the subscribe packets
                     this.subscriptionCache.push(el)
-                    this.eventEmitter.emit("resubscription", el, { suback: value as MQTTSubAck })
+                    this.eventEmitter.emit('resubscription', el, { suback: value as MQTTSubAck })
                 })
                 .catch((err: Error) => {
                     // resubscribe failed, inform the client
-                    this.eventEmitter.emit("resubscription", el, { err: err })
+                    this.eventEmitter.emit('resubscription', el, { err: err })
                 })
         })
         this.subscriptionCache = new subscriptionCache()
@@ -753,12 +753,12 @@ export class ProtocolHandler implements PingerCallback {
             case PacketType.PINGRESP: {
                 // PING response received
                 this.pinger.reset()
-                this.trace("received PINGRESP")
+                this.trace('received PINGRESP')
                 break
             }
 
             default: {
-                throw new Error("invalid packet received...")
+                throw new Error('invalid packet received...')
             }
         }
     }
@@ -798,7 +798,7 @@ export class ProtocolHandler implements PingerCallback {
                 return
             }
 
-            this.eventEmitter.emit("disconnected", e)
+            this.eventEmitter.emit('disconnected', e)
             if (e instanceof ServerDisconnectedError) {
                 // Server sent DISCONNECT packet
                 this.trace(e.getMessageWithDescription())

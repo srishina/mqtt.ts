@@ -16,9 +16,9 @@ describe('MQTT topic tests', () => {
 
     it('valid publish topics', () => {
         const validPublishTopics = [
-            "pub/topic",
-            "pub//topic",
-            "pub/ /topic",
+            'pub/topic',
+            'pub//topic',
+            'pub/ /topic',
         ]
 
         validPublishTopics.forEach(function(element) {
@@ -28,17 +28,17 @@ describe('MQTT topic tests', () => {
 
     it('invalid publish topics', () => {
         const invalidPublishTopics = [
-            "+pub/topic",
-            "pub+/topic",
-            "pub/+topic",
-            "pub/topic+",
-            "pub/topic/+",
-            "#pub/topic",
-            "pub#/topic",
-            "pub/#topic",
-            "pub/topic#",
-            "pub/topic/#",
-            "+/pub/topic",
+            '+pub/topic',
+            'pub+/topic',
+            'pub/+topic',
+            'pub/topic+',
+            'pub/topic/+',
+            '#pub/topic',
+            'pub#/topic',
+            'pub/#topic',
+            'pub/topic#',
+            'pub/topic/#',
+            '+/pub/topic',
         ]
 
         invalidPublishTopics.forEach(function(element) {
@@ -48,20 +48,20 @@ describe('MQTT topic tests', () => {
 
     it('valid subscribe topics', () => {
         const validSubscribeTopics = [
-            "sub/topic",
-            "sub//topic",
-            "sub/ /topic",
-            "sub/+/topic",
-            "+/+/+",
-            "+",
-            "sub/topic/#",
-            "sub//topic/#",
-            "sub/ /topic/#",
-            "sub/+/topic/#",
-            "+/+/+/#",
-            "#",
-            "/#",
-            "sub/topic/+/#",
+            'sub/topic',
+            'sub//topic',
+            'sub/ /topic',
+            'sub/+/topic',
+            '+/+/+',
+            '+',
+            'sub/topic/#',
+            'sub//topic/#',
+            'sub/ /topic/#',
+            'sub/+/topic/#',
+            '+/+/+/#',
+            '#',
+            '/#',
+            'sub/topic/+/#',
         ]
 
         validSubscribeTopics.forEach(function(element) {
@@ -71,16 +71,16 @@ describe('MQTT topic tests', () => {
 
     it('invalid subscribe topics', () => {
         const invalidSubscribeTopics = [
-            "+sub/topic",
-            "sub+/topic",
-            "sub/+topic",
-            "sub/topic+",
-            "#sub/topic",
-            "sub#/topic",
-            "sub/#topic",
-            "sub/topic#",
-            "#/sub/topic",
-            "",
+            '+sub/topic',
+            'sub+/topic',
+            'sub/+topic',
+            'sub/topic+',
+            '#sub/topic',
+            'sub#/topic',
+            'sub/#topic',
+            'sub/topic#',
+            '#/sub/topic',
+            '',
         ]
 
         invalidSubscribeTopics.forEach(function(element) {
@@ -102,24 +102,24 @@ describe('MQTT topic tests', () => {
             }
         }
 
-        matchHelper("foo/#", "foo/")
-        matchHelper("foo/+/#", "foo/bar/baz")
-        matchHelper("#", "foo/bar/baz")
-        matchHelper("/#", "/foo/bar")
+        matchHelper('foo/#', 'foo/')
+        matchHelper('foo/+/#', 'foo/bar/baz')
+        matchHelper('#', 'foo/bar/baz')
+        matchHelper('/#', '/foo/bar')
 
         const subscribeTopics = new Map([
-            ["foo/#", "foo"],
-            ["foo//bar", "foo//bar"],
-            ["foo//+", "foo//bar"],
-            ["foo/+/+/baz", "foo///baz"],
-            ["foo/bar/+", "foo/bar/"],
-            ["foo/bar", "foo/bar"],
-            ["foo/+", "foo/bar"],
-            ["foo/+/baz", "foo/bar/baz"],
-            ["A/B/+/#", "A/B/B/C"],
-            ["foo/+/#", "foo/bar"],
-            ["#", "foo/bar/baz"],
-            ["/#", "/foo/bar"]
+            ['foo/#', 'foo'],
+            ['foo//bar', 'foo//bar'],
+            ['foo//+', 'foo//bar'],
+            ['foo/+/+/baz', 'foo///baz'],
+            ['foo/bar/+', 'foo/bar/'],
+            ['foo/bar', 'foo/bar'],
+            ['foo/+', 'foo/bar'],
+            ['foo/+/baz', 'foo/bar/baz'],
+            ['A/B/+/#', 'A/B/B/C'],
+            ['foo/+/#', 'foo/bar'],
+            ['#', 'foo/bar/baz'],
+            ['/#', '/foo/bar']
         ])
 
         subscribeTopics.forEach(function(value, key) {
@@ -142,16 +142,16 @@ describe('MQTT topic tests', () => {
                 const subscribers = matcher.match(topic)
                 expect(subscribers.length).to.equal(0)
             } catch (e) {
-                expect.fail('exception thrown' + e + " for sub topic " + subtopic + " and topic to match " + topic)
+                expect.fail('exception thrown' + e + ' for sub topic ' + subtopic + ' and topic to match ' + topic)
             }
         }
 
-        noMatchHelper("test/6/#", "test/3")
-        noMatchHelper("foo/bar", "foo")
-        noMatchHelper("foo/+", "foo/bar/baz")
-        noMatchHelper("foo/+/baz", "foo/bar/bar")
-        noMatchHelper("foo/+/#", "fo2/bar/baz")
-        noMatchHelper("/#", "foo/bar")
+        noMatchHelper('test/6/#', 'test/3')
+        noMatchHelper('foo/bar', 'foo')
+        noMatchHelper('foo/+', 'foo/bar/baz')
+        noMatchHelper('foo/+/baz', 'foo/bar/bar')
+        noMatchHelper('foo/+/#', 'fo2/bar/baz')
+        noMatchHelper('/#', 'foo/bar')
 
         const noMatchThrowHelper = function(subtopic: string, topic: string) {
             const matcher = new TopicMatcher<number>()
@@ -160,34 +160,34 @@ describe('MQTT topic tests', () => {
             matcher.match(topic)
         }
 
-        expect(() => noMatchThrowHelper("+foo", "+foo")).to.throw()
-        expect(() => noMatchThrowHelper("fo+o", "fo+o")).to.throw()
-        expect(() => noMatchThrowHelper("foo+", "foo+")).to.throw()
-        expect(() => noMatchThrowHelper("+foo/bar", "+foo/bar")).to.throw()
-        expect(() => noMatchThrowHelper("foo+/bar", "foo+/bar")).to.throw()
-        expect(() => noMatchThrowHelper("foo/+bar", "foo/+bar")).to.throw()
-        expect(() => noMatchThrowHelper("foo/bar+", "foo/bar+")).to.throw()
-        expect(() => noMatchThrowHelper("+foo", "afoo")).to.throw()
-        expect(() => noMatchThrowHelper("fo+o", "foao")).to.throw()
-        expect(() => noMatchThrowHelper("foo+", "fooa")).to.throw()
-        expect(() => noMatchThrowHelper("+foo/bar", "afoo/bar")).to.throw()
-        expect(() => noMatchThrowHelper("foo+/bar", "fooa/bar")).to.throw()
-        expect(() => noMatchThrowHelper("foo/+bar", "foo/abar")).to.throw()
-        expect(() => noMatchThrowHelper("foo/bar+", "foo/bara")).to.throw()
-        expect(() => noMatchThrowHelper("#foo", "#foo")).to.throw()
-        expect(() => noMatchThrowHelper("fo#o", "fo#o")).to.throw()
-        expect(() => noMatchThrowHelper("foo#", "foo#")).to.throw()
-        expect(() => noMatchThrowHelper("#foo/bar", "#foo/bar")).to.throw()
-        expect(() => noMatchThrowHelper("foo#/bar", "foo#/bar")).to.throw()
-        expect(() => noMatchThrowHelper("foo/#bar", "foo/#bar")).to.throw()
-        expect(() => noMatchThrowHelper("foo/bar#", "foo/bar#")).to.throw()
-        expect(() => noMatchThrowHelper("foo+", "fooa")).to.throw()
+        expect(() => noMatchThrowHelper('+foo', '+foo')).to.throw()
+        expect(() => noMatchThrowHelper('fo+o', 'fo+o')).to.throw()
+        expect(() => noMatchThrowHelper('foo+', 'foo+')).to.throw()
+        expect(() => noMatchThrowHelper('+foo/bar', '+foo/bar')).to.throw()
+        expect(() => noMatchThrowHelper('foo+/bar', 'foo+/bar')).to.throw()
+        expect(() => noMatchThrowHelper('foo/+bar', 'foo/+bar')).to.throw()
+        expect(() => noMatchThrowHelper('foo/bar+', 'foo/bar+')).to.throw()
+        expect(() => noMatchThrowHelper('+foo', 'afoo')).to.throw()
+        expect(() => noMatchThrowHelper('fo+o', 'foao')).to.throw()
+        expect(() => noMatchThrowHelper('foo+', 'fooa')).to.throw()
+        expect(() => noMatchThrowHelper('+foo/bar', 'afoo/bar')).to.throw()
+        expect(() => noMatchThrowHelper('foo+/bar', 'fooa/bar')).to.throw()
+        expect(() => noMatchThrowHelper('foo/+bar', 'foo/abar')).to.throw()
+        expect(() => noMatchThrowHelper('foo/bar+', 'foo/bara')).to.throw()
+        expect(() => noMatchThrowHelper('#foo', '#foo')).to.throw()
+        expect(() => noMatchThrowHelper('fo#o', 'fo#o')).to.throw()
+        expect(() => noMatchThrowHelper('foo#', 'foo#')).to.throw()
+        expect(() => noMatchThrowHelper('#foo/bar', '#foo/bar')).to.throw()
+        expect(() => noMatchThrowHelper('foo#/bar', 'foo#/bar')).to.throw()
+        expect(() => noMatchThrowHelper('foo/#bar', 'foo/#bar')).to.throw()
+        expect(() => noMatchThrowHelper('foo/bar#', 'foo/bar#')).to.throw()
+        expect(() => noMatchThrowHelper('foo+', 'fooa')).to.throw()
     })
 
     it('Topic unsubscribe', () => {
 
-        const topic = "foo/#"
-        const topicToMatch = "foo/"
+        const topic = 'foo/#'
+        const topicToMatch = 'foo/'
 
         const matcher = new TopicMatcher<number>()
         const tSubscriber = new emptyTestSubscriber()
@@ -201,11 +201,11 @@ describe('MQTT topic tests', () => {
 
     it('Topic unsubscribers', () => {
         const subscribeTopics = [
-            "foo/#",
-            "foo/bar/a/+",
-            "foo/bar/a/b",
+            'foo/#',
+            'foo/bar/a/+',
+            'foo/bar/a/b',
         ]
-        const topicToMatch = "foo/bar/a/b"
+        const topicToMatch = 'foo/bar/a/b'
 
         const matcher = new TopicMatcher<number>()
         const tSubscriber = new emptyTestSubscriber()

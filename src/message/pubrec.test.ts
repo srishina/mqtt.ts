@@ -32,7 +32,7 @@ describe('MQTT PUBREC test', () => {
 
     it('PUBREC packet test with properties', () => {
         const id = 0x12
-        const reasonString = "abc"
+        const reasonString = 'abc'
         const reasonBytes = new Uint8Array([
             0x00, 0x03, 0x61, 0x62, 0x63,
         ])

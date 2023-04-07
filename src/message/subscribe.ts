@@ -1,8 +1,8 @@
-import {PacketWithID} from "./packet"
+import {PacketWithID} from './packet'
 import {PacketType, PropertyID, MQTTCommonReasonCode, getPropertyText, getCommonReasonCodeName} from '../utils/constants'
-import type { DataStreamDecoder} from "../utils/codec"
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from "../utils/codec"
-import {DecoderError} from "../client/errors"
+import type { DataStreamDecoder} from '../utils/codec'
+import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from '../utils/codec'
+import {DecoderError} from '../client/errors'
 
 export type MQTTSubscription = {
     topicFilter: string;
@@ -71,7 +71,7 @@ export class SubscribePacket extends PacketWithID {
 
             const qos = (el.qos ? el.qos : 0)
             if (qos > 2) {
-                throw new Error("invalid QoS flag- Malformed packet")
+                throw new Error('invalid QoS flag- Malformed packet')
             }
 
             let b = 0
@@ -109,7 +109,7 @@ export function decodeSubscribePacket(dec: DataStreamDecoder): {pktID: number, r
             case PropertyID.SubscriptionIdentifierID:
                 data.properties.subscriptionIdentifer = PropertyDecoderOnlyOnce.toVarUint32(dec, id, data.properties.subscriptionIdentifer)
                 if (data.properties.subscriptionIdentifer == 0) {
-                    throw new Error(getPropertyText(id) + " must not be 0")
+                    throw new Error(getPropertyText(id) + ' must not be 0')
                 }
                 propertyLen -= encodedVarUint32Size(data.properties.subscriptionIdentifer)
                 break
@@ -123,7 +123,7 @@ export function decodeSubscribePacket(dec: DataStreamDecoder): {pktID: number, r
                 break
             }
             default:
-                throw new DecoderError("SUBSCRIBE: wrong property with identifier " + id)
+                throw new DecoderError('SUBSCRIBE: wrong property with identifier ' + id)
         }
     }
 
@@ -158,9 +158,9 @@ export namespace MQTTSubAckReason {
     }
 
     export const Name = new Map<Code, string>([
-        [Code.GrantedQoS0, "Granted QoS 0"],
-        [Code.GrantedQoS1, "Granted QoS 1"],
-        [Code.GrantedQoS2, "Granted QoS 2"],
+        [Code.GrantedQoS0, 'Granted QoS 0'],
+        [Code.GrantedQoS1, 'Granted QoS 1'],
+        [Code.GrantedQoS2, 'Granted QoS 2'],
         [Code.UnspecifiedError, getCommonReasonCodeName(MQTTCommonReasonCode.UnspecifiedError)],
         [Code.ImplSpecificError, getCommonReasonCodeName(MQTTCommonReasonCode.ImplSpecificError)],
         [Code.NotAuthorized, getCommonReasonCodeName(MQTTCommonReasonCode.NotAuthorized)],
@@ -173,18 +173,18 @@ export namespace MQTTSubAckReason {
     ])
 
     export const Description = new Map<Code, string>([
-        [Code.GrantedQoS0, "The subscription is accepted and the maximum QoS sent will be QoS 0. This might be a lower QoS than was requested."],
-        [Code.GrantedQoS1, "The subscription is accepted and the maximum QoS sent will be QoS 1. This might be a lower QoS than was requested."],
-        [Code.GrantedQoS2, "The subscription is accepted and any received QoS will be sent to this subscription."],
-        [Code.UnspecifiedError, "The subscription is not accepted and the Server either does not wish to reveal the reason or none of the other Reason Codes apply."],
-        [Code.ImplSpecificError, "The SUBSCRIBE is valid but the Server does not accept it."],
-        [Code.NotAuthorized, "The Client is not authorized to make this subscription."],
-        [Code.TopicNameInvalid, "The Topic Filter is correctly formed but is not allowed for this Client."],
-        [Code.PacketIdentifierInUse, "The specified Packet Identifier is already in use."],
-        [Code.QuotaExceeded, "An implementation or administrative imposed limit has been exceeded."],
-        [Code.SharedSubscriptionsNotSupported, "The Server does not support Shared Subscriptions for this Client."],
-        [Code.SubscriptionIdsNotSupported, "The Server does not support Subscription Identifiers; the subscription is not accepted."],
-        [Code.WildcardSubscriptionsNotSupported, "The Server does not support Wildcard Subscriptions; the subscription is not accepted."],
+        [Code.GrantedQoS0, 'The subscription is accepted and the maximum QoS sent will be QoS 0. This might be a lower QoS than was requested.'],
+        [Code.GrantedQoS1, 'The subscription is accepted and the maximum QoS sent will be QoS 1. This might be a lower QoS than was requested.'],
+        [Code.GrantedQoS2, 'The subscription is accepted and any received QoS will be sent to this subscription.'],
+        [Code.UnspecifiedError, 'The subscription is not accepted and the Server either does not wish to reveal the reason or none of the other Reason Codes apply.'],
+        [Code.ImplSpecificError, 'The SUBSCRIBE is valid but the Server does not accept it.'],
+        [Code.NotAuthorized, 'The Client is not authorized to make this subscription.'],
+        [Code.TopicNameInvalid, 'The Topic Filter is correctly formed but is not allowed for this Client.'],
+        [Code.PacketIdentifierInUse, 'The specified Packet Identifier is already in use.'],
+        [Code.QuotaExceeded, 'An implementation or administrative imposed limit has been exceeded.'],
+        [Code.SharedSubscriptionsNotSupported, 'The Server does not support Shared Subscriptions for this Client.'],
+        [Code.SubscriptionIdsNotSupported, 'The Server does not support Subscription Identifiers; the subscription is not accepted.'],
+        [Code.WildcardSubscriptionsNotSupported, 'The Server does not support Wildcard Subscriptions; the subscription is not accepted.'],
     ])
 }
 
@@ -270,7 +270,7 @@ export function decodeSubAckPacket(dec: DataStreamDecoder): {pktID: number, resu
             }
 
             default:
-                throw new DecoderError("SUBACK: wrong property with identifier " + id)
+                throw new DecoderError('SUBACK: wrong property with identifier ' + id)
         }
     }
 

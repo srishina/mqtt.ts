@@ -93,7 +93,7 @@ export function decodeMQTTPublishResponse(byte0: number, dec: DataStreamDecoder)
                     }
 
                     default:
-                        throw new DecoderError("SUBACK: wrong property with identifier " + id)
+                        throw new DecoderError('SUBACK: wrong property with identifier ' + id)
                 }
             }
         }

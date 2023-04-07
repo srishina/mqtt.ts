@@ -1,8 +1,8 @@
-import {PacketWithID} from "./packet"
+import {PacketWithID} from './packet'
 import {PacketType, PropertyID, MQTTCommonReasonCode, getCommonReasonCodeName} from '../utils/constants'
-import type { DataStreamDecoder} from "../utils/codec"
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from "../utils/codec"
-import {DecoderError} from "../client/errors"
+import type { DataStreamDecoder} from '../utils/codec'
+import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from '../utils/codec'
+import {DecoderError} from '../client/errors'
 
 export type MQTTUnsubscribeProperties = {
     userProperty?: Map<string, string>;
@@ -82,7 +82,7 @@ export function decodeUnsubscribePacket(dec: DataStreamDecoder): {pktID: number,
                 break
             }
             default:
-                throw new DecoderError("UNSUBSCRIBE: wrong property with identifier " + id)
+                throw new DecoderError('UNSUBSCRIBE: wrong property with identifier ' + id)
         }
     }
 
@@ -91,7 +91,7 @@ export function decodeUnsubscribePacket(dec: DataStreamDecoder): {pktID: number,
     }
 
     if (data.topicFilters.length == 0) {
-        throw new Error("Subscription payload MUST contain atleast a topic - protocol error")
+        throw new Error('Subscription payload MUST contain atleast a topic - protocol error')
     }
 
     return {pktID: pktID, result: data}
@@ -110,7 +110,7 @@ export namespace MQTTUnsubAckReason {
 
     export const Name = new Map<Code, string>([
         [Code.Success, getCommonReasonCodeName(MQTTCommonReasonCode.Success)],
-        [Code.NoSubscriptionExisted, "No subscription existed"],
+        [Code.NoSubscriptionExisted, 'No subscription existed'],
         [Code.UnspecifiedError, getCommonReasonCodeName(MQTTCommonReasonCode.UnspecifiedError)],
         [Code.ImplSpecificError, getCommonReasonCodeName(MQTTCommonReasonCode.ImplSpecificError)],
         [Code.NotAuthorized, getCommonReasonCodeName(MQTTCommonReasonCode.NotAuthorized)],
@@ -119,13 +119,13 @@ export namespace MQTTUnsubAckReason {
     ])
 
     export const Description = new Map<Code, string>([
-        [Code.Success, "The subscription is deleted."],
-        [Code.NoSubscriptionExisted, "No matching Topic Filter is being used by the Client."],
-        [Code.UnspecifiedError, "The unsubscribe could not be completed and the Server either does not wish to reveal the reason or none of the other Reason Codes apply."],
-        [Code.ImplSpecificError, "The UNSUBSCRIBE is valid but the Server does not accept it."],
-        [Code.NotAuthorized, "The Client is not authorized to unsubscribe."],
-        [Code.TopicFilterInvalid, "The Topic Filter is correctly formed but is not allowed for this Client."],
-        [Code.PacketIdentifierInUse, "The specified Packet Identifier is already in use."],
+        [Code.Success, 'The subscription is deleted.'],
+        [Code.NoSubscriptionExisted, 'No matching Topic Filter is being used by the Client.'],
+        [Code.UnspecifiedError, 'The unsubscribe could not be completed and the Server either does not wish to reveal the reason or none of the other Reason Codes apply.'],
+        [Code.ImplSpecificError, 'The UNSUBSCRIBE is valid but the Server does not accept it.'],
+        [Code.NotAuthorized, 'The Client is not authorized to unsubscribe.'],
+        [Code.TopicFilterInvalid, 'The Topic Filter is correctly formed but is not allowed for this Client.'],
+        [Code.PacketIdentifierInUse, 'The specified Packet Identifier is already in use.'],
     ])
 }
 
@@ -204,7 +204,7 @@ export function decodeUnsubAckPacket(dec: DataStreamDecoder): {pktID: number, re
             }
 
             default:
-                throw new DecoderError("UNSUBACK: wrong property with identifier " + id)
+                throw new DecoderError('UNSUBACK: wrong property with identifier ' + id)
         }
     }
 

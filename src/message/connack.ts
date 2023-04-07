@@ -1,6 +1,6 @@
 import {PropertyID, MQTTCommonReasonCode, PacketType, getPropertyText, getCommonReasonCodeName} from '../utils/constants'
-import type { DataStreamDecoder} from "../utils/codec"
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from "../utils/codec"
+import type { DataStreamDecoder} from '../utils/codec'
+import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from '../utils/codec'
 import {DecoderError} from '../client/errors'
 
 export namespace MQTTConnAckReason {
@@ -35,14 +35,14 @@ export namespace MQTTConnAckReason {
         [Code.MalformedPacket, getCommonReasonCodeName(MQTTCommonReasonCode.MalformedPacket)],
         [Code.ProtocolError, getCommonReasonCodeName(MQTTCommonReasonCode.ProtocolError)],
         [Code.ImplSpecificError, getCommonReasonCodeName(MQTTCommonReasonCode.ImplSpecificError)],
-        [Code.UnsupportedProtocolVer, "Unsupported Protocol Version"],
-        [Code.ClientIDNotValud, "Client Identifier not valid"],
-        [Code.BadUsernameOrPWD, "Bad User Name or Password"],
+        [Code.UnsupportedProtocolVer, 'Unsupported Protocol Version'],
+        [Code.ClientIDNotValud, 'Client Identifier not valid'],
+        [Code.BadUsernameOrPWD, 'Bad User Name or Password'],
         [Code.NotAuthorized, getCommonReasonCodeName(MQTTCommonReasonCode.NotAuthorized)],
-        [Code.ServerUnavailable, "Server unavailable"],
-        [Code.ServerBusy, "Server busy"],
-        [Code.Banned, "Banned"],
-        [Code.BadAuthMethod, "Bad authentication method"],
+        [Code.ServerUnavailable, 'Server unavailable'],
+        [Code.ServerBusy, 'Server busy'],
+        [Code.Banned, 'Banned'],
+        [Code.BadAuthMethod, 'Bad authentication method'],
         [Code.TopicNameInvalid, getCommonReasonCodeName(MQTTCommonReasonCode.TopicNameInvalid)],
         [Code.PacketTooLarge, getCommonReasonCodeName(MQTTCommonReasonCode.PacketTooLarge)],
         [Code.QuotaExceeded, getCommonReasonCodeName(MQTTCommonReasonCode.QuotaExceeded)],
@@ -55,28 +55,28 @@ export namespace MQTTConnAckReason {
     ])
 
     export const Description = new Map<Code, string>([
-        [Code.Success, "The Connection is accepted."],
-        [Code.UnspecifiedError, "The Server does not wish to reveal the reason for the failure, or none of the other Reason Codes apply."],
-        [Code.MalformedPacket, "Data within the CONNECT packet could not be correctly parsed. "],
-        [Code.ProtocolError, "Data in the CONNECT packet does not conform to this specification."],
-        [Code.ImplSpecificError, "The CONNECT is valid but is not accepted by this Server."],
-        [Code.UnsupportedProtocolVer, "The Server does not support the version of the MQTT protocol requested by the Client."],
-        [Code.ClientIDNotValud, "The Client Identifier is a valid string but is not allowed by the Server."],
-        [Code.BadUsernameOrPWD, "The Server does not accept the User Name or Password specified by the Client "],
-        [Code.NotAuthorized, "The Client is not authorized to connect."],
-        [Code.ServerUnavailable, "The MQTT Server is not available."],
-        [Code.ServerBusy, "The Server is busy. Try again later."],
-        [Code.Banned, "This Client has been banned by administrative action. Contact the server administrator."],
-        [Code.BadAuthMethod, "The authentication method is not supported or does not match the authentication method currently in use."],
-        [Code.TopicNameInvalid, "The Will Topic Name is not malformed, but is not accepted by this Server."],
-        [Code.PacketTooLarge, "The CONNECT packet exceeded the maximum permissible size."],
-        [Code.QuotaExceeded, "An implementation or administrative imposed limit has been exceeded."],
-        [Code.PayloadFormatInvalid, "The Will Payload does not match the specified Payload Format Indicator."],
-        [Code.RetainNotSupported, "The Server does not support retained messages, and Will Retain was set to 1."],
-        [Code.QoSNotSupported, "The Server does not support the QoS set in Will QoS."],
-        [Code.UseAnotherServer, "The Client should temporarily use another server."],
-        [Code.ServerMoved, "The Client should permanently use another server."],
-        [Code.ConnectionRateExceeded, "The connection rate limit has been exceeded."],
+        [Code.Success, 'The Connection is accepted.'],
+        [Code.UnspecifiedError, 'The Server does not wish to reveal the reason for the failure, or none of the other Reason Codes apply.'],
+        [Code.MalformedPacket, 'Data within the CONNECT packet could not be correctly parsed. '],
+        [Code.ProtocolError, 'Data in the CONNECT packet does not conform to this specification.'],
+        [Code.ImplSpecificError, 'The CONNECT is valid but is not accepted by this Server.'],
+        [Code.UnsupportedProtocolVer, 'The Server does not support the version of the MQTT protocol requested by the Client.'],
+        [Code.ClientIDNotValud, 'The Client Identifier is a valid string but is not allowed by the Server.'],
+        [Code.BadUsernameOrPWD, 'The Server does not accept the User Name or Password specified by the Client '],
+        [Code.NotAuthorized, 'The Client is not authorized to connect.'],
+        [Code.ServerUnavailable, 'The MQTT Server is not available.'],
+        [Code.ServerBusy, 'The Server is busy. Try again later.'],
+        [Code.Banned, 'This Client has been banned by administrative action. Contact the server administrator.'],
+        [Code.BadAuthMethod, 'The authentication method is not supported or does not match the authentication method currently in use.'],
+        [Code.TopicNameInvalid, 'The Will Topic Name is not malformed, but is not accepted by this Server.'],
+        [Code.PacketTooLarge, 'The CONNECT packet exceeded the maximum permissible size.'],
+        [Code.QuotaExceeded, 'An implementation or administrative imposed limit has been exceeded.'],
+        [Code.PayloadFormatInvalid, 'The Will Payload does not match the specified Payload Format Indicator.'],
+        [Code.RetainNotSupported, 'The Server does not support retained messages, and Will Retain was set to 1.'],
+        [Code.QoSNotSupported, 'The Server does not support the QoS set in Will QoS.'],
+        [Code.UseAnotherServer, 'The Client should temporarily use another server.'],
+        [Code.ServerMoved, 'The Client should permanently use another server.'],
+        [Code.ConnectionRateExceeded, 'The connection rate limit has been exceeded.'],
     ])
 }
 
@@ -213,7 +213,7 @@ export function decodeConnAckPacket(dec: DataStreamDecoder): MQTTConnAck {
             case PropertyID.ReceiveMaximumID: {
                 data.properties.receiveMaximum = PropertyDecoderOnlyOnce.toUint16(dec, id, data.properties.receiveMaximum)
                 if (data.properties.receiveMaximum == 0) {
-                    throw new Error(getPropertyText(id) + " must not be 0")
+                    throw new Error(getPropertyText(id) + ' must not be 0')
                 }
                 propertyLen -= 2
                 break
@@ -222,7 +222,7 @@ export function decodeConnAckPacket(dec: DataStreamDecoder): MQTTConnAck {
             case PropertyID.MaximumQoSID: {
                 data.properties.maximumQoS = PropertyDecoderOnlyOnce.toByte(dec, id, data.properties.maximumQoS)
                 if (data.properties.maximumQoS != 0 && data.properties.maximumQoS != 1) {
-                    throw new Error(getPropertyText(id) + " wrong maximum Qos")
+                    throw new Error(getPropertyText(id) + ' wrong maximum Qos')
                 }
                 propertyLen--
                 break
@@ -237,7 +237,7 @@ export function decodeConnAckPacket(dec: DataStreamDecoder): MQTTConnAck {
             case PropertyID.MaximumPacketSizeID: {
                 data.properties.maximumPacketSize = PropertyDecoderOnlyOnce.toUint32(dec, id, data.properties.maximumPacketSize)
                 if (data.properties.maximumPacketSize == 0) {
-                    throw new Error(getPropertyText(id) + " must not be 0")
+                    throw new Error(getPropertyText(id) + ' must not be 0')
                 }
 
                 propertyLen -= 4
@@ -320,7 +320,7 @@ export function decodeConnAckPacket(dec: DataStreamDecoder): MQTTConnAck {
                 break
             }
             default:
-                throw new DecoderError("CONNACK: wrong property with identifier " + id)
+                throw new DecoderError('CONNACK: wrong property with identifier ' + id)
         }
     }
 
