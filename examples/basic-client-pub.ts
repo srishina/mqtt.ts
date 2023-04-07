@@ -1,5 +1,5 @@
 import * as yargs from 'yargs'
-import * as mqttv5 from './../dist/index.js';
+import * as mqttv5 from './../dist/index.js'
 
 const opts = yargs
     .usage("Usage: ts-node $0 -b <broker> [-k <keep-alive>] [-c <clean-start>] -t <topic> -p <payload-str> [-q <qos>]")
@@ -11,22 +11,25 @@ const opts = yargs
         payload: {alias: "p", describe: "Payload", type: "string", demandOption: true},
         qos: {alias: "q", describe: "QoS", type: "number", demandOption: false, default: 0},
     })
-    .argv;
+    .argv
 
 async function run() {
-    const mqttConnect: mqttv5.MQTTConnect = {keepAlive: opts.keepAlive, cleanStart: opts.cleanStart};
+    const mqttConnect: mqttv5.MQTTConnect = {keepAlive: opts.keepAlive, cleanStart: opts.cleanStart}
     const client = new mqttv5.MQTTClient(opts.broker, {timeout: 2000})
+    
+    // eslint-disable-next-line
     const connack = await client.connect(mqttConnect).catch(err => {
-        console.log("Failed to connect, error: " + err);
-    });
+        console.log("Failed to connect, error: " + err)
+    })
+    
     if (client) {
         await client.publish({topic: opts.topic, payload: opts.payload, qos: opts.qos}).then(() => {
-            console.log("Message published successfully");
+            console.log("Message published successfully")
         }).catch(err => {
-            console.log("Failed to publish, error: " + err);
-        });
-        client.disconnect();
+            console.log("Failed to publish, error: " + err)
+        })
+        client.disconnect()
     }
 }
 
-run();
+run()

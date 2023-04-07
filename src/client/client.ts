@@ -1,24 +1,26 @@
-import {ProtocolHandler, Subscriber} from "./protocolhandler";
-import {MQTTPublish} from "../message/publish";
-import {MQTTSubAck, MQTTSubscribe} from "../message/subscribe";
-import {MQTTUnsubAck, MQTTUnsubscribe} from "../message/unsubscribe";
-import {MQTTConnAck} from "../message/connack";
-import {MQTTConnect} from "../message/connect";
+import type { Subscriber} from "./protocolhandler"
+import {ProtocolHandler} from "./protocolhandler"
+import type {MQTTPublish} from "../message/publish"
+import type {MQTTSubAck, MQTTSubscribe} from "../message/subscribe"
+import type {MQTTUnsubAck, MQTTUnsubscribe} from "../message/unsubscribe"
+import type {MQTTConnAck} from "../message/connack"
+import type {MQTTConnect} from "../message/connect"
 
-import {MessageEvents} from "./eventhandler";
+import type {MessageEvents} from "./eventhandler"
 
-import {EventEmitter} from "events";
-import TypedEmitter from "typed-emitter";
-import {MQTTDisconnect, MQTTDisconnectReason} from "../message/disconnect";
-import {MQTTStatstics} from "../utils/constants";
-import {Options} from "./options";
+import {EventEmitter} from "events"
+import type TypedEmitter from "typed-emitter"
+import type {MQTTDisconnect} from "../message/disconnect"
+import { MQTTDisconnectReason} from "../message/disconnect"
+import type {MQTTStatstics} from "../utils/constants"
+import type {Options} from "./options"
 
 const defaultOpts = {
     timeout: 2000,
     initialReconnectDelay: 1000, // 1 sec
     maxReconnectDelay: 32000, // 32 sec
     jitter: 0.5,
-};
+}
 
 /**
  * MQTT Client object
@@ -32,13 +34,13 @@ export class MQTTClient extends (EventEmitter as new () => TypedEmitter<MessageE
      * @param url MQTT broker where the client should attempt a connection
      */
     constructor(uri: string, options: Partial<Options> = {}) {
-        super();
-        this.protocolHandler = new ProtocolHandler(uri, Object.assign(defaultOpts, options), this);
-        this.uri = uri;
+        super()
+        this.protocolHandler = new ProtocolHandler(uri, Object.assign(defaultOpts, options), this)
+        this.uri = uri
     }
 
     getURL(): string {
-        return this.uri;
+        return this.uri
     }
 
     /**
@@ -52,11 +54,11 @@ export class MQTTClient extends (EventEmitter as new () => TypedEmitter<MessageE
         return new Promise((resolve, reject) => {
             this.protocolHandler.connect(msg)
                 .then((connack) => {
-                    resolve(connack);
+                    resolve(connack)
                 }).catch((err) => {
-                    reject(err);
-                });
-        });
+                    reject(err)
+                })
+        })
     }
 
     /**
@@ -64,14 +66,14 @@ export class MQTTClient extends (EventEmitter as new () => TypedEmitter<MessageE
      * @see MQTTStatstics
      */
     getStatistics(): MQTTStatstics {
-        return this.protocolHandler.getStatistics();
+        return this.protocolHandler.getStatistics()
     }
 
     /**
      * send MQTT DISCONNECT packet and closes the connection with the to the MQTT broker.
      */
     disconnect(msg?: MQTTDisconnect): void | never {
-        this.protocolHandler.disconnect(msg ? msg : {reasonCode: MQTTDisconnectReason.Code.NormalDisconnection});
+        this.protocolHandler.disconnect(msg ? msg : {reasonCode: MQTTDisconnectReason.Code.NormalDisconnection})
     }
 
     /**
@@ -83,7 +85,7 @@ export class MQTTClient extends (EventEmitter as new () => TypedEmitter<MessageE
      * @return Promise<void>
      */
     publish(msg: MQTTPublish): Promise<void> {
-        return this.protocolHandler.sendPublish(msg);
+        return this.protocolHandler.sendPublish(msg)
     }
 
     /**
@@ -99,7 +101,7 @@ export class MQTTClient extends (EventEmitter as new () => TypedEmitter<MessageE
      * @return Promise<MQTTSubAck> @see MQTTSubAck
      */
     subscribe(msg: MQTTSubscribe, subscriber: Subscriber): Promise<MQTTSubAck> {
-        return this.protocolHandler.sendSubscribe(msg, subscriber);
+        return this.protocolHandler.sendSubscribe(msg, subscriber)
     }
 
     /**
@@ -111,10 +113,10 @@ export class MQTTClient extends (EventEmitter as new () => TypedEmitter<MessageE
      * @return Promise<MQTTUnsubAck> @see MQTTUnsubAck
      */
     unsubscribe(msg: MQTTUnsubscribe): Promise<MQTTUnsubAck> {
-        return this.protocolHandler.sendUnsubscribe(msg);
+        return this.protocolHandler.sendUnsubscribe(msg)
     }
 
     getSubscriptionCache(): MQTTSubscribe[] {
-        return this.protocolHandler.getSubscriptionCache();
+        return this.protocolHandler.getSubscriptionCache()
     }
 }

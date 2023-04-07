@@ -1,5 +1,5 @@
-import * as yargs from 'yargs';
-import * as mqttv5 from './../dist/index.js';
+import * as yargs from 'yargs'
+import * as mqttv5 from './../dist/index.js'
 
 const opts = yargs
     .usage("Usage: ts-node $0 -b <broker> [-k <keep-alive>] [-c <clean-start>]")
@@ -8,18 +8,19 @@ const opts = yargs
         keepAlive: {alias: "k", describe: "Keep alive", type: "number", demandOption: false, default: 0},
         cleanStart: {alias: "c", describe: "Clean start", type: "boolean", demandOption: false, default: true},
     })
-    .argv;
+    .argv
 
 async function run() {
-    const mqttConnect: mqttv5.MQTTConnect = {keepAlive: opts.keepAlive, cleanStart: opts.cleanStart};
+    const mqttConnect: mqttv5.MQTTConnect = {keepAlive: opts.keepAlive, cleanStart: opts.cleanStart}
     const client = new mqttv5.MQTTClient(opts.broker, {timeout: 2000})
     const result = await client.connect(mqttConnect).catch(err => {
-        console.log("Failed to connect, error: " + err);
-    });
+        console.log("Failed to connect, error: " + err)
+    })
+    
     if (result) {
         console.log("MQTT Client connected successfully")
-        client.disconnect();
+        client.disconnect()
     }
 }
 
-run();
+run()

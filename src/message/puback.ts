@@ -1,6 +1,7 @@
-import {decodeMQTTPublishResponse, PublishResponsePacket} from "./packet";
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, DataStreamDecoder} from "../utils/codec";
-import {PacketType, PropertyID, MQTTCommonReasonCode, getCommonReasonCodeName} from '../utils/constants';
+import {decodeMQTTPublishResponse, PublishResponsePacket} from "./packet"
+import type { DataStreamEncoder, DataStreamDecoder} from "../utils/codec"
+import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty} from "../utils/codec"
+import {PacketType, PropertyID, MQTTCommonReasonCode, getCommonReasonCodeName} from '../utils/constants'
 
 export namespace MQTTPubAckReason {
     export enum Code {
@@ -25,7 +26,7 @@ export namespace MQTTPubAckReason {
         [Code.PacketIdentifierInUse, getCommonReasonCodeName(MQTTCommonReasonCode.PacketIdentifierInUse)],
         [Code.QuotaExceeded, getCommonReasonCodeName(MQTTCommonReasonCode.QuotaExceeded)],
         [Code.PayloadFormatInvalid, getCommonReasonCodeName(MQTTCommonReasonCode.PayloadFormatInvalid)],
-    ]);
+    ])
     export const Description = new Map<Code, string>([
         [Code.Success, "The message is accepted. Publication of the QoS 1 message proceeds."],
         [Code.NoMatchingSubscribers, `The message is accepted but there are no subscribers. This 
@@ -40,7 +41,7 @@ export namespace MQTTPubAckReason {
                                         mismatch in the Session State between the Client and Server.`],
         [Code.QuotaExceeded, "An implementation or administrative imposed limit has been exceeded."],
         [Code.PayloadFormatInvalid, "The payload format does not match the specified Payload Format Indicator."],
-    ]);
+    ])
 }
 
 export type MQTTPubAckProperties = {
@@ -56,41 +57,41 @@ export type MQTTPubAck = {
 export class MQTTPubAckPacket extends PublishResponsePacket {
     private msg: MQTTPubAck;
     constructor(pktID: number, msg: MQTTPubAck) {
-        super(pktID);
-        this.msg = msg;
+        super(pktID)
+        this.msg = msg
     }
 
     propertyLength(): number {
-        let propertyLen = 0;
+        let propertyLen = 0
         if (this.msg.properties) {
-            propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(this.msg.properties.reasonString);
-            propertyLen += PropertySizeIfNotEmpty.fromUTF8StringPair(this.msg.properties.userProperty);
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8Str(this.msg.properties.reasonString)
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8StringPair(this.msg.properties.userProperty)
         }
 
-        return propertyLen;
+        return propertyLen
     }
 
     encodeProperties(enc: DataStreamEncoder, propertyLen: number): void | never {
-        enc.encodeVarUint32(propertyLen);
+        enc.encodeVarUint32(propertyLen)
         if (this.msg.properties) {
-            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ReasonStringID, this.msg.properties.reasonString);
-            PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, this.msg.properties.userProperty);
+            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ReasonStringID, this.msg.properties.reasonString)
+            PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, this.msg.properties.userProperty)
         }
     }
 
     hasProperties(): boolean {
-        return (this.msg.properties ? true : false);
+        return (this.msg.properties ? true : false)
     }
 
     build(): Uint8Array | never {
-        const byte0: number = PacketType.PUBACK << 4;
-        return this.buildWitHeaderFlag(byte0, this.msg.reason);
+        const byte0: number = PacketType.PUBACK << 4
+        return this.buildWitHeaderFlag(byte0, this.msg.reason)
     }
 }
 
 export function decodePubAckPacket(byte0: number, dec: DataStreamDecoder): {pktID: number, puback: MQTTPubAck} {
-    const {pktID, result} = decodeMQTTPublishResponse(byte0, dec);
+    const {pktID, result} = decodeMQTTPublishResponse(byte0, dec)
     return {
         pktID: pktID, puback: {reason: result.reasonCode, properties: {reasonString: result.reasonString, userProperty: result.userProperty}}
-    };
+    }
 }

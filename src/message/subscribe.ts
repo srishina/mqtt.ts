@@ -1,7 +1,8 @@
-import {PacketWithID} from "./packet";
-import {PacketType, PropertyID, MQTTCommonReasonCode, getPropertyText, getCommonReasonCodeName} from '../utils/constants';
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, DataStreamDecoder, PropertyDecoderOnlyOnce} from "../utils/codec";
-import {DecoderError} from "../client/errors";
+import {PacketWithID} from "./packet"
+import {PacketType, PropertyID, MQTTCommonReasonCode, getPropertyText, getCommonReasonCodeName} from '../utils/constants'
+import type { DataStreamDecoder} from "../utils/codec"
+import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from "../utils/codec"
+import {DecoderError} from "../client/errors"
 
 export type MQTTSubscription = {
     topicFilter: string;
@@ -25,119 +26,119 @@ export class SubscribePacket extends PacketWithID {
     private msg: MQTTSubscribe;
 
     constructor(pktID: number, msg: MQTTSubscribe) {
-        super(pktID);
-        this.msg = msg;
+        super(pktID)
+        this.msg = msg
     }
 
     propertyLength(): number {
-        let propertyLen = 0;
+        let propertyLen = 0
         if (this.msg.properties) {
-            propertyLen += PropertySizeIfNotEmpty.fromVarUin32(this.msg.properties.subscriptionIdentifer);
-            propertyLen += PropertySizeIfNotEmpty.fromUTF8StringPair(this.msg.properties.userProperty);
+            propertyLen += PropertySizeIfNotEmpty.fromVarUin32(this.msg.properties.subscriptionIdentifer)
+            propertyLen += PropertySizeIfNotEmpty.fromUTF8StringPair(this.msg.properties.userProperty)
         }
 
-        return propertyLen;
+        return propertyLen
     }
 
     encodeProperties(enc: DataStreamEncoder, propertyLen: number): void | never {
-        enc.encodeVarUint32(propertyLen);
+        enc.encodeVarUint32(propertyLen)
         if (this.msg.properties) {
-            PropertyEncoderIfNotEmpty.fromVarUint32(enc, PropertyID.SubscriptionIdentifierID, this.msg.properties.subscriptionIdentifer);
-            PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, this.msg.properties.userProperty);
+            PropertyEncoderIfNotEmpty.fromVarUint32(enc, PropertyID.SubscriptionIdentifierID, this.msg.properties.subscriptionIdentifer)
+            PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, this.msg.properties.userProperty)
         }
     }
 
     build(): Uint8Array | never {
-        const propertyLen = this.propertyLength();
+        const propertyLen = this.propertyLength()
 
-        let remainingLength = (2 + propertyLen + encodedVarUint32Size(propertyLen));
+        let remainingLength = (2 + propertyLen + encodedVarUint32Size(propertyLen))
         this.msg.subscriptions.forEach(function (el) {
-            remainingLength += (2 + el.topicFilter.length + 1);
-        });
+            remainingLength += (2 + el.topicFilter.length + 1)
+        })
 
-        const encoder = new DataStreamEncoder(remainingLength + 2); // fixed header length = 1,  remaining len(varuint32)
+        const encoder = new DataStreamEncoder(remainingLength + 2) // fixed header length = 1,  remaining len(varuint32)
 
-        encoder.encodeByte((PacketType.SUBSCRIBE << 4) | 0x2);
-        encoder.encodeVarUint32(remainingLength);
+        encoder.encodeByte((PacketType.SUBSCRIBE << 4) | 0x2)
+        encoder.encodeVarUint32(remainingLength)
 
-        encoder.encodeUint16(this.id);
+        encoder.encodeUint16(this.id)
 
         // encode properties
-        this.encodeProperties(encoder, propertyLen);
+        this.encodeProperties(encoder, propertyLen)
 
         this.msg.subscriptions.forEach(function (el) {
-            encoder.encodeUTF8String(el.topicFilter);
+            encoder.encodeUTF8String(el.topicFilter)
 
-            const qos = (el.qos ? el.qos : 0);
+            const qos = (el.qos ? el.qos : 0)
             if (qos > 2) {
-                throw new Error("invalid QoS flag- Malformed packet");
+                throw new Error("invalid QoS flag- Malformed packet")
             }
 
-            let b = 0;
+            let b = 0
             // write subscribe options
-            b |= (qos & 0x03);
+            b |= (qos & 0x03)
             if (el.noLocal) {
-                b |= 0x04;
+                b |= 0x04
             }
             if (el.retainAsPublished) {
-                b |= 0x08;
+                b |= 0x08
             }
 
-            b |= ((el.retainHandling ? el.retainHandling : 0) & 0x30);
+            b |= ((el.retainHandling ? el.retainHandling : 0) & 0x30)
 
-            encoder.encodeByte(b);
-        });
+            encoder.encodeByte(b)
+        })
 
-        return encoder.byteArray;
+        return encoder.byteArray
     }
 }
 
 export function decodeSubscribePacket(dec: DataStreamDecoder): {pktID: number, result: MQTTSubscribe} | never {
-    const pktID = dec.decodeUint16();
+    const pktID = dec.decodeUint16()
 
-    const data: MQTTSubscribe = {subscriptions: []};
+    const data: MQTTSubscribe = {subscriptions: []}
     // decode properties
-    let propertyLen = dec.decodeVarUint32();
+    let propertyLen = dec.decodeVarUint32()
     if (propertyLen) {
-        data.properties = {};
+        data.properties = {}
     }
     while (propertyLen > 0 && data.properties) {
-        const id = dec.decodeVarUint32();
-        propertyLen--;
+        const id = dec.decodeVarUint32()
+        propertyLen--
         switch (id) {
             case PropertyID.SubscriptionIdentifierID:
-                data.properties.subscriptionIdentifer = PropertyDecoderOnlyOnce.toVarUint32(dec, id, data.properties.subscriptionIdentifer);
+                data.properties.subscriptionIdentifer = PropertyDecoderOnlyOnce.toVarUint32(dec, id, data.properties.subscriptionIdentifer)
                 if (data.properties.subscriptionIdentifer == 0) {
-                    throw new Error(getPropertyText(id) + " must not be 0");
+                    throw new Error(getPropertyText(id) + " must not be 0")
                 }
-                propertyLen -= encodedVarUint32Size(data.properties.subscriptionIdentifer);
-                break;
+                propertyLen -= encodedVarUint32Size(data.properties.subscriptionIdentifer)
+                break
             case PropertyID.UserPropertyID: {
                 if (!data.properties.userProperty) {
-                    data.properties.userProperty = new Map<string, string>();
+                    data.properties.userProperty = new Map<string, string>()
                 }
-                const {key, value} = dec.decodeUTF8StringPair();
-                data.properties.userProperty.set(key, value);
-                propertyLen -= (key.length + value.length + 4);
-                break;
+                const {key, value} = dec.decodeUTF8StringPair()
+                data.properties.userProperty.set(key, value)
+                propertyLen -= (key.length + value.length + 4)
+                break
             }
             default:
-                throw new DecoderError("SUBSCRIBE: wrong property with identifier " + id);
+                throw new DecoderError("SUBSCRIBE: wrong property with identifier " + id)
         }
     }
 
     while (dec.remainingLength() > 0) {
-        const subscription: MQTTSubscription = {topicFilter: dec.decodeUTF8String()};
-        const options: number = dec.decodeByte();
-        subscription.qos = (options & 0x03);
-        subscription.noLocal = (options & 0x04) == 1;
-        subscription.retainAsPublished = (options & 0x08) == 1;
-        subscription.retainHandling = (options & 0x30);
+        const subscription: MQTTSubscription = {topicFilter: dec.decodeUTF8String()}
+        const options: number = dec.decodeByte()
+        subscription.qos = (options & 0x03)
+        subscription.noLocal = (options & 0x04) == 1
+        subscription.retainAsPublished = (options & 0x08) == 1
+        subscription.retainHandling = (options & 0x30)
 
-        data.subscriptions.push(subscription);
+        data.subscriptions.push(subscription)
     }
 
-    return {pktID: pktID, result: data};
+    return {pktID: pktID, result: data}
 }
 
 export namespace MQTTSubAckReason {
@@ -169,7 +170,7 @@ export namespace MQTTSubAckReason {
         [Code.SharedSubscriptionsNotSupported, getCommonReasonCodeName(MQTTCommonReasonCode.SharedSubscriptionsNotSupported)],
         [Code.SubscriptionIdsNotSupported, getCommonReasonCodeName(MQTTCommonReasonCode.SubscriptionIdsNotSupported)],
         [Code.WildcardSubscriptionsNotSupported, getCommonReasonCodeName(MQTTCommonReasonCode.WildcardSubscriptionsNotSupported)],
-    ]);
+    ])
 
     export const Description = new Map<Code, string>([
         [Code.GrantedQoS0, "The subscription is accepted and the maximum QoS sent will be QoS 0. This might be a lower QoS than was requested."],
@@ -184,7 +185,7 @@ export namespace MQTTSubAckReason {
         [Code.SharedSubscriptionsNotSupported, "The Server does not support Shared Subscriptions for this Client."],
         [Code.SubscriptionIdsNotSupported, "The Server does not support Subscription Identifiers; the subscription is not accepted."],
         [Code.WildcardSubscriptionsNotSupported, "The Server does not support Wildcard Subscriptions; the subscription is not accepted."],
-    ]);
+    ])
 }
 
 export type MQTTSubAckProperties = {
@@ -203,83 +204,83 @@ export class SubAckPacket extends PacketWithID {
     private msg: MQTTSubAck;
 
     constructor(pktID: number, msg: MQTTSubAck) {
-        super(pktID);
-        this.msg = msg;
+        super(pktID)
+        this.msg = msg
     }
 
     propertyLength(): number {
         return this.msg.properties ? PropertySizeIfNotEmpty.fromUTF8StringPair(this.msg.properties.userProperty)
-            + PropertySizeIfNotEmpty.fromUTF8Str(this.msg.properties.reasonString) : 0;
+            + PropertySizeIfNotEmpty.fromUTF8Str(this.msg.properties.reasonString) : 0
     }
 
     encodeProperties(enc: DataStreamEncoder, propertyLen: number): void | never {
-        enc.encodeVarUint32(propertyLen);
+        enc.encodeVarUint32(propertyLen)
         if (this.msg.properties) {
-            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ReasonStringID, this.msg.properties.reasonString);
-            PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, this.msg.properties.userProperty);
+            PropertyEncoderIfNotEmpty.fromUTF8Str(enc, PropertyID.ReasonStringID, this.msg.properties.reasonString)
+            PropertyEncoderIfNotEmpty.fromUTF8StringPair(enc, PropertyID.UserPropertyID, this.msg.properties.userProperty)
         }
     }
 
     build(): Uint8Array | never {
-        const propertyLen = this.propertyLength();
+        const propertyLen = this.propertyLength()
 
-        const remainingLength = (2 + propertyLen + encodedVarUint32Size(propertyLen) + this.msg.reasonCodes.length);
-        const encoder = new DataStreamEncoder(remainingLength + 2); // fixed header length = 1,  remaining len(varuint32)
+        const remainingLength = (2 + propertyLen + encodedVarUint32Size(propertyLen) + this.msg.reasonCodes.length)
+        const encoder = new DataStreamEncoder(remainingLength + 2) // fixed header length = 1,  remaining len(varuint32)
 
-        encoder.encodeByte((PacketType.SUBACK << 4));
-        encoder.encodeVarUint32(remainingLength);
+        encoder.encodeByte((PacketType.SUBACK << 4))
+        encoder.encodeVarUint32(remainingLength)
 
-        encoder.encodeUint16(this.id);
-        this.encodeProperties(encoder, propertyLen);
+        encoder.encodeUint16(this.id)
+        this.encodeProperties(encoder, propertyLen)
 
         this.msg.reasonCodes.forEach(el => {
-            encoder.encodeByte(el);
-        });
-        return encoder.byteArray;
+            encoder.encodeByte(el)
+        })
+        return encoder.byteArray
     }
 }
 
 export function decodeSubAckPacket(dec: DataStreamDecoder): {pktID: number, result: MQTTSubAck} {
-    const pktID = dec.decodeUint16();
+    const pktID = dec.decodeUint16()
 
-    let props: MQTTSubAckProperties | undefined;
+    let props: MQTTSubAckProperties | undefined
     // read properties
-    let propertyLen = dec.decodeVarUint32();
+    let propertyLen = dec.decodeVarUint32()
     if (propertyLen > 0) {
-        props = {};
+        props = {}
     }
     while (propertyLen > 0 && props) {
-        const id = dec.decodeVarUint32();
-        propertyLen--;
+        const id = dec.decodeVarUint32()
+        propertyLen--
         switch (id) {
             case PropertyID.ReasonStringID: {
-                props.reasonString = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, props.reasonString);
-                propertyLen -= (props.reasonString.length + 2);
-                break;
+                props.reasonString = PropertyDecoderOnlyOnce.toUTF8Str(dec, id, props.reasonString)
+                propertyLen -= (props.reasonString.length + 2)
+                break
             }
 
             case PropertyID.UserPropertyID: {
                 if (!props.userProperty) {
-                    props.userProperty = new Map<string, string>();
+                    props.userProperty = new Map<string, string>()
                 }
-                const {key, value} = dec.decodeUTF8StringPair();
-                props.userProperty.set(key, value);
-                propertyLen -= (key.length + value.length + 4);
-                break;
+                const {key, value} = dec.decodeUTF8StringPair()
+                props.userProperty.set(key, value)
+                propertyLen -= (key.length + value.length + 4)
+                break
             }
 
             default:
-                throw new DecoderError("SUBACK: wrong property with identifier " + id);
+                throw new DecoderError("SUBACK: wrong property with identifier " + id)
         }
     }
 
-    const payload = dec.decodeBinaryDataNoLength(dec.remainingLength());
+    const payload = dec.decodeBinaryDataNoLength(dec.remainingLength())
 
-    const result: MQTTSubAck = {reasonCodes: [], properties: props};
+    const result: MQTTSubAck = {reasonCodes: [], properties: props}
 
     payload.forEach(el => {
-        result.reasonCodes.push(el);
-    });
+        result.reasonCodes.push(el)
+    })
 
-    return {pktID: pktID, result: result};
+    return {pktID: pktID, result: result}
 }

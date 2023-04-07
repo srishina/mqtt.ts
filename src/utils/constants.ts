@@ -33,7 +33,7 @@ export const MQTTPacketTypeName = new Map<PacketType, string>([
     [PacketType.PINGRESP, "PINGRESP"],
     [PacketType.DISCONNECT, "DISCONNECT"],
     [PacketType.AUTH, "AUTH"]
-]);
+])
 
 export enum MQTTCommonReasonCode {
     Success = 0x00, // CONNACK, PUBACK, PUBREC, PUBREL, PUBCOMP, UNSUBACK, AUTH
@@ -87,10 +87,10 @@ const MQTTCommonReasonCodeName = new Map<MQTTCommonReasonCode, string>([
     [MQTTCommonReasonCode.ConnectionRateExceeded, "Connection rate exceeded"],
     [MQTTCommonReasonCode.SubscriptionIdsNotSupported, "Subscription Identifiers not supported"],
     [MQTTCommonReasonCode.WildcardSubscriptionsNotSupported, "Wildcard Subscriptions not supported"],
-]);
+])
 
 export function getCommonReasonCodeName(code: MQTTCommonReasonCode): string {
-    return MQTTCommonReasonCodeName.has(code) ? MQTTCommonReasonCodeName.get(code) as string : "";
+    return MQTTCommonReasonCodeName.has(code) ? MQTTCommonReasonCodeName.get(code) as string : ""
 }
 
 export enum PropertyID {
@@ -205,11 +205,11 @@ const MQTTPropertyText = new Map<PropertyID, string>([
     [PropertyID.WildcardSubscriptionAvailableID, "Wildcard Subscription Available"],
     [PropertyID.SubscriptionIdentifierAvailableID, "Subscription Identifier Available"],
     [PropertyID.SharedSubscriptionAvailableID, "Shared Subscription Available"],
-]);
+])
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 export function getPropertyText(id: PropertyID): string {
-    return MQTTPropertyText.get(id)!;
+    return MQTTPropertyText.get(id)!
 }
 /* eslint-enable @typescript-eslint/no-non-null-assertion */
 

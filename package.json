@@ -6,7 +6,7 @@
   "typings": "dist/index.d.ts",
   "scripts": {
     "test": "mocha --reporter spec --require ts-node/register 'src/**/*.test.ts'",
-    "lint": "eslint ./src/ --ext .ts",
+    "lint": "eslint ./src/ ./demo/ ./examples/ --ext .ts",
     "build": "tsc --declaration && tsc -p tsconfig.browser.json && tsc -p tsconfig.demo.json",
     "clean": "rm -rf ./dist ./dist.browser ./dist.browser.demo",
     "minify": "jsmin -o ./dist/index.min.js ./dist/index.js",
