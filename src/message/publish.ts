@@ -50,7 +50,7 @@ function validateFlags(msg: MQTTPublish): void | never {
     }
 }
 
-export class PublishPacket extends PacketWithID {
+export class MQTTPublishPacket extends PacketWithID {
     public msg: MQTTPublish;
 
     constructor(id: number, msg: MQTTPublish) {

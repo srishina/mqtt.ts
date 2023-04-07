@@ -1,4 +1,4 @@
-import {decodePublishPacket, MQTTPublish, PublishPacket, getPayloadAsString} from './publish';
+import {decodePublishPacket, MQTTPublish, MQTTPublishPacket, getPayloadAsString} from './publish';
 
 import * as chai from 'chai';
 import {PropertyID} from '../utils/constants';
@@ -22,7 +22,7 @@ describe('MQTT PUBLISH basic test', () => {
         const topic = "a/b";
         const payload = "Welcome!";
         const pub: MQTTPublish = {dup: true, qos: 1, retain: true, topic: topic, payload: payload};
-        expect(new PublishPacket(18, pub).build()).to.eql(encoded);
+        expect(new MQTTPublishPacket(18, pub).build()).to.eql(encoded);
 
         // decode the packet, ignore the header flag and the remaining length as decoder expects
         // the data after the remaining length field
@@ -53,7 +53,7 @@ describe('MQTT PUBLISH basic test', () => {
         const topic = "a/b";
         const payload = "Welcome!";
         const pub: MQTTPublish = {dup: true, qos: 2, retain: true, topic: topic, properties: {topicAlias: topicAliasID}, payload: payload};
-        expect(new PublishPacket(identifer, pub).build()).to.eql(encoded);
+        expect(new MQTTPublishPacket(identifer, pub).build()).to.eql(encoded);
 
         const decoder = new DataStreamDecoder(encoded.buffer.slice(2));
         const {pktID, result} = decodePublishPacket(byte0, decoder);
@@ -61,7 +61,7 @@ describe('MQTT PUBLISH basic test', () => {
         expect(result.qos).to.eql(2);
         expect(result.dup).to.true;
         expect(result.retain).to.true;
-        expect(result.properties!.topicAlias).to.eql(topicAliasID);
+        expect(result.properties?.topicAlias).to.eql(topicAliasID);
         expect(result.topic).to.eql(topic);
         expect(getPayloadAsString(result.payload)).to.eql(payload);
     });
@@ -80,7 +80,7 @@ describe('MQTT PUBLISH basic test', () => {
         const topic = "a/b";
         const payload = "Welcome!";
         const pub: MQTTPublish = {retain: true, topic: topic, payload: payload};
-        expect(new PublishPacket(18, pub).build()).to.eql(encoded);
+        expect(new MQTTPublishPacket(18, pub).build()).to.eql(encoded);
 
         const decoder = new DataStreamDecoder(encoded.buffer.slice(2));
         const {pktID, result} = decodePublishPacket(byte0, decoder);
@@ -108,11 +108,10 @@ describe('MQTT PUBLISH basic test', () => {
         const topic = "a/b";
         const payload = "Welcome!";
         const pub: MQTTPublish = {retain: true, topic: topic, properties: {topicAlias: topicAliasID}, payload: payload};
-        expect(new PublishPacket(18, pub).build()).to.eql(encoded);
+        expect(new MQTTPublishPacket(18, pub).build()).to.eql(encoded);
     });
 
     it('MQTT PUBLISH test with QoS 0 with user properties', () => {
-        const topicAliasID = 0x0F;
         // no packet identifier present when QoS is 0
         const encoded = new Uint8Array([
             0x31, // PUBLISH, NO-DUP, 0, RETAIN
@@ -135,7 +134,7 @@ describe('MQTT PUBLISH basic test', () => {
         const topic = "a/b";
         const payload = "Welcome!";
         const pub: MQTTPublish = {retain: true, topic: topic, payload: payload, properties: {userProperty: userProperty}};
-        expect(new PublishPacket(18, pub).build()).to.eql(encoded);
+        expect(new MQTTPublishPacket(18, pub).build()).to.eql(encoded);
     });
 
 });

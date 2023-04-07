@@ -1,4 +1,4 @@
-import * as yargs from 'yargs'
+import * as yargs from 'yargs';
 import * as mqttv5 from './../dist/index.js';
 
 const opts = yargs

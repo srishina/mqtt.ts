@@ -1,7 +1,8 @@
-import {MQTTStatstics, PacketType} from "../utils/constants";
-import {DataStreamDecoder, PIDGenerator, Deferred, encodedVarUint32Size} from "../utils/codec";
-import {TopicMatcher, Observer, isPublishTopicValid} from "../utils/topic";
+import { MQTTStatstics, PacketType } from "../utils/constants";
+import { DataStreamDecoder, PIDGenerator, Deferred, encodedVarUint32Size } from "../utils/codec";
+import { TopicMatcher, Observer, isPublishTopicValid } from "../utils/topic";
 
+// eslint-disable-next-line
 let WebSocket: any;
 if (typeof window === 'undefined') {
     WebSocket = require('ws');
@@ -9,22 +10,22 @@ if (typeof window === 'undefined') {
     WebSocket = global.WebSocket;
 }
 
-import {decodePublishPacket, PublishPacket} from "../message/publish";
-import {decodePubAckPacket, MQTTPubAckPacket, MQTTPubAckReason} from "../message/puback";
-import {decodePubRecPacket, MQTTPubRecPacket, MQTTPubRecReason} from "../message/pubrec";
-import {decodePubRelPacket, MQTTPubRelPacket, MQTTPubRelReason} from "../message/pubrel";
-import {decodePubCompPacket, MQTTPubCompPacket, MQTTPubCompReason} from "../message/pubcomp";
-import {decodeSubAckPacket, MQTTSubAck, MQTTSubscribe, SubscribePacket} from "../message/subscribe";
-import {MQTTUnsubAck, MQTTUnsubscribe, UnsubscribePacket, decodeUnsubAckPacket} from "../message/unsubscribe";
-import {decodeDisconnectPacket, encodeDisconnectPacket, MQTTDisconnect, MQTTDisconnectReason} from "../message/disconnect";
-import {MQTTConnect, encodeConnectPacket} from "../message/connect";
-import {decodeConnAckPacket, MQTTConnAck} from "../message/connack";
-import {MQTTPublish} from "../message/publish";
-import {MessageEvents} from "./eventhandler";
+import { decodePublishPacket, MQTTPublishPacket } from "../message/publish";
+import { decodePubAckPacket, MQTTPubAckPacket, MQTTPubAckReason } from "../message/puback";
+import { decodePubRecPacket, MQTTPubRecPacket, MQTTPubRecReason } from "../message/pubrec";
+import { decodePubRelPacket, MQTTPubRelPacket, MQTTPubRelReason } from "../message/pubrel";
+import { decodePubCompPacket, MQTTPubCompPacket, MQTTPubCompReason } from "../message/pubcomp";
+import { decodeSubAckPacket, MQTTSubAck, MQTTSubscribe, SubscribePacket } from "../message/subscribe";
+import { MQTTUnsubAck, MQTTUnsubscribe, UnsubscribePacket, decodeUnsubAckPacket } from "../message/unsubscribe";
+import { decodeDisconnectPacket, encodeDisconnectPacket, MQTTDisconnect, MQTTDisconnectReason } from "../message/disconnect";
+import { MQTTConnect, encodeConnectPacket } from "../message/connect";
+import { decodeConnAckPacket, MQTTConnAck } from "../message/connack";
+import { MQTTPublish } from "../message/publish";
+import { MessageEvents } from "./eventhandler";
 import TypedEventEmitter from "typed-emitter";
-import {ServerDisconnectedError} from "./errors";
-import {buildHeaderOnlyPacket, PacketWithID} from "../message/packet";
-import {Options} from "./options";
+import { ServerDisconnectedError } from "./errors";
+import { buildHeaderOnlyPacket, PacketWithID } from "../message/packet";
+import { Options } from "./options";
 
 export type Subscriber = Observer<MQTTPublish>
 
@@ -89,23 +90,10 @@ class Pinger {
     }
 }
 
-declare global {
-    interface Array<T> {
-        indexOfObject(prop: string, val: string): number;
-    }
-}
-
-Array.prototype.indexOfObject = function (prop: string, value: string) {
-    for (let i = 0, len = this.length; i < len; i++) {
-        if (this[i][prop] === value) return i;
-    }
-    return -1;
-};
-
 class subscriptionCache extends Array<MQTTSubscribe> {
     removeSubscriptionFromCache(topicFilter: string): void {
         for (let i = this.length - 1; i >= 0; i--) {
-            const index = this[i].subscriptions.indexOfObject("topicFilter", topicFilter);
+            const index = this[i].subscriptions.findIndex(sub => sub.topicFilter === topicFilter);
             if (index != -1) {
                 this[i].subscriptions.splice(index, 1);
             }
@@ -128,12 +116,12 @@ export class ExponentialBackoff {
     }
 
     next(): number {
-        let range = (this.current - (this.current / 2)) * this.jitter;
+        const range = (this.current - (this.current / 2)) * this.jitter;
         this.current += (Math.random() * range) - range / 2;
 
         this.current = Math.max(0, Math.min(this.maxValue, Math.floor(this.current)));
 
-        var current = this.current;
+        const current = this.current;
 
         // calculate the next value
         this.current *= 2;
@@ -175,8 +163,8 @@ export class ProtocolHandler implements PingerCallback {
     private mqttStastics: MQTTStatstics;
 
     private sendQoS12Quota: number;
-    private pendingQoS12Pkts: PublishPacket[];
-    private pendingQoS0Pkts: PublishPacket[];
+    private pendingQoS12Pkts: MQTTPublishPacket[];
+    private pendingQoS0Pkts: MQTTPublishPacket[];
 
     private backoff: ExponentialBackoff;
     private reconnectTimer: ReturnType<typeof setTimeout> | undefined;
@@ -186,7 +174,7 @@ export class ProtocolHandler implements PingerCallback {
         this.uri = uri;
         this.options = options;
         this.topicMatcher = new TopicMatcher<MQTTPublish>();
-        this.outgoingRequests = new Map<number, PublishPacket>();
+        this.outgoingRequests = new Map<number, MQTTPublishPacket>();
         this.incommingPublish = new Map<number, MQTTPublish>();
         this.clientCompletionNotifiers = new Map<number, clientCompletionNotifier>();
         this.clientTopicAliasMapping = new Map<number, string>();
@@ -204,7 +192,7 @@ export class ProtocolHandler implements PingerCallback {
         this.pendingQoS12Pkts = []; // we store the QoS 1 & 2 packets when the server mandates the maximum QoS 1 & 2 packets that it can process
         this.pendingQoS0Pkts = []; // we store the QoS0 packets when we are not connected
 
-        this.mqttStastics = {numBytesSent: 0, numBytesReceived: 0, totalPublishPktsSent: 0, totalPublishPktsReceived: 0};
+        this.mqttStastics = { numBytesSent: 0, numBytesReceived: 0, totalPublishPktsSent: 0, totalPublishPktsReceived: 0 };
 
         this.backoff = new ExponentialBackoff(this.options.initialReconnectDelay, this.options.maxReconnectDelay, this.options.jitter);
     }
@@ -269,7 +257,7 @@ export class ProtocolHandler implements PingerCallback {
     internalDisconnect(e: Error): void | never {
         this.clearLocalState();
         this.eventEmitter.emit("disconnected", new Error("Connection lost"));
-        let nextRetryInterval = this.backoff.next()
+        const nextRetryInterval = this.backoff.next();
         // reconnect if needed
         this.reconnectTimer = setTimeout(() => {
             this.reconnect();
@@ -293,7 +281,7 @@ export class ProtocolHandler implements PingerCallback {
                 this.reconnectTimer = undefined;
                 this.drainPendingPkts();
             }).catch((error) => {
-                this.backoff.next()
+                this.backoff.next();
                 this.internalDisconnect(error);
             });
         }
@@ -302,13 +290,17 @@ export class ProtocolHandler implements PingerCallback {
     private doConnect(timeout: number): Promise<MQTTConnAck> {
         return new Promise((resolve, reject) => {
             this.webSocket = new WebSocket(this.uri, ["mqtt"]);
-            this.webSocket!.binaryType = 'arraybuffer';
+            if (!this.webSocket) {
+                reject(new Error("Error initialiting websocket object"));
+                return;
+            }
 
-            this.webSocket!.onclose = (event: CloseEvent) => {
+            this.webSocket.binaryType = 'arraybuffer';
+
+            this.webSocket.onclose = (event: CloseEvent) => {
                 let e: Error;
                 if (event.code === 1000) {
                     e = new Error("Websocket closed normally");
-                    console.log("Websocket closed normally");
                 } else {
                     e = new Error("Websocket closed abnormally " + event.code);
                     // reconnect
@@ -317,26 +309,26 @@ export class ProtocolHandler implements PingerCallback {
                 this.internalDisconnect(e);
             };
 
-            this.webSocket!.onerror = (error: Event) => {
-                this.connectingPromise!.reject(error);
+            this.webSocket.onerror = (error: Event) => {
+                this.connectingPromise?.reject(error);
                 this.connected = false;
             };
 
-            this.webSocket!.onmessage = (evt: MessageEvent) => {
+            this.webSocket.onmessage = (evt: MessageEvent) => {
                 this.messageReceived(evt.data);
             };
 
-            this.webSocket!.onopen = (event: Event) => {
+            this.webSocket.onopen = () => {
                 this.protocolConnect();
             };
 
             this.connectingPromise = new Deferred<MQTTConnAck>();
+
             const timer = setTimeout(() => {
-                this.disconnect({reasonCode: MQTTDisconnectReason.Code.UnspecifiedError});
-                reject(new Error("webSocket timeout"));
+                this.disconnect({ reasonCode: MQTTDisconnectReason.Code.UnspecifiedError });
             }, timeout);
 
-            this.connectingPromise.getPromise()
+            this.connectingPromise?.getPromise()
                 .then((connack: MQTTConnAck) => {
                     clearTimeout(timer);
                     resolve(connack);
@@ -389,13 +381,13 @@ export class ProtocolHandler implements PingerCallback {
         // remap topic aliases
         const mappedAliases: Map<string, number> = new Map<string, number>();
         outgoingRequestsCopy.forEach((v) => {
-            if (v instanceof PublishPacket) {
-                const isPublish = v as PublishPacket;
+            if (v instanceof MQTTPublishPacket) {
+                const isPublish = v as MQTTPublishPacket;
                 if (isPublish.msg.properties && isPublish.msg.properties.topicAlias && isPublish.msg.topic.length == 0) {
                     const topic = this.clientTopicAliasMapping.get(isPublish.msg.properties.topicAlias);
                     if (topic && !mappedAliases.has(topic)) {
                         isPublish.msg.topic = topic;
-                        mappedAliases.set(topic, isPublish.msg.properties.topicAlias!);
+                        mappedAliases.set(topic, isPublish.msg.properties.topicAlias);
                     }
                 }
                 isPublish.msg.dup = true;
@@ -414,7 +406,7 @@ export class ProtocolHandler implements PingerCallback {
         this.pendingQoS0Pkts = [];
     }
 
-    private scheduleQoS0Packet(pkt: PublishPacket): void | never {
+    private scheduleQoS0Packet(pkt: MQTTPublishPacket): void | never {
         if (this.connected) {
             this.websocketSend(pkt.build());
         }
@@ -423,14 +415,16 @@ export class ProtocolHandler implements PingerCallback {
         }
     }
 
-    private decrementSendQuotaAndSend(pkt?: PublishPacket): void | never {
+    private decrementSendQuotaAndSend(pkt?: MQTTPublishPacket): void | never {
         if (this.connected) {
             if (pkt) {
                 this.websocketSend(pkt.build());
             }
             else if (this.pendingQoS12Pkts.length > 0) {
                 const pktToSend = this.pendingQoS12Pkts.pop();
-                this.websocketSend(pktToSend!.build());
+                if (pktToSend) {
+                    this.websocketSend(pktToSend.build());
+                }
             } else {
                 return;
             }
@@ -444,7 +438,7 @@ export class ProtocolHandler implements PingerCallback {
         this.decrementSendQuotaAndSend();
     }
 
-    private scheduleQoS12Packet(pkt: PublishPacket): void | never {
+    private scheduleQoS12Packet(pkt: MQTTPublishPacket): void | never {
         if (this.connected) {
             if (this.sendQoS12Quota > 0) {
                 this.decrementSendQuotaAndSend(pkt);
@@ -461,8 +455,11 @@ export class ProtocolHandler implements PingerCallback {
     }
 
     private websocketSend(buf: Uint8Array): void | never {
+        if (!this.webSocket) {
+            return;
+        }
         this.mqttStastics.numBytesSent += buf.byteLength;
-        this.webSocket!.send(buf);
+        this.webSocket.send(buf);
     }
 
     sendPing(): void | never {
@@ -524,15 +521,17 @@ export class ProtocolHandler implements PingerCallback {
 
             // delete topic alias if the client has reset
             if (msg.topic.length > 0 && !topicAlias) {
-                const topicAliasPair = [...this.clientTopicAliasMapping].find(([_, value]) => value == msg.topic);
-                if (topicAliasPair) {
-                    this.clientTopicAliasMapping.delete(topicAliasPair[0]);
+                for (const [key, value] of this.clientTopicAliasMapping) {
+                    if (value === msg.topic) {
+                        this.clientTopicAliasMapping.delete(key);
+                        return;
+                    }
                 }
             }
 
             const packetID = (msg.qos && (msg.qos > 0)) ? this.pidgen.nextID() : 0;
 
-            const publishPkt = new PublishPacket(packetID, msg);
+            const publishPkt = new MQTTPublishPacket(packetID, msg);
             const publishMsg = new clientCompletionNotifier(publishPkt);
             if (msg.qos && (msg.qos > 0)) {
                 this.outgoingRequests.set(packetID, publishPkt);
@@ -596,11 +595,11 @@ export class ProtocolHandler implements PingerCallback {
                     // we are resubscribed, inform the client todo... emit resubscribe
                     // store the subscribe packets
                     this.subscriptionCache.push(el);
-                    this.eventEmitter.emit("resubscription", el, {suback: value as MQTTSubAck});
+                    this.eventEmitter.emit("resubscription", el, { suback: value as MQTTSubAck });
                 })
                 .catch((err: Error) => {
                     // resubscribe failed, inform the client
-                    this.eventEmitter.emit("resubscription", el, {err: err});
+                    this.eventEmitter.emit("resubscription", el, { err: err });
                 });
         });
         this.subscriptionCache = new subscriptionCache();
@@ -645,7 +644,7 @@ export class ProtocolHandler implements PingerCallback {
                 this.notifyPublishMessage(msg);
                 break;
             case 1: {
-                const pubAckPkt = new MQTTPubAckPacket(pktID, {reason: MQTTPubAckReason.Code.Success});
+                const pubAckPkt = new MQTTPubAckPacket(pktID, { reason: MQTTPubAckReason.Code.Success });
                 this.schedule(pubAckPkt.build());
                 if (!msg.dup) {
                     this.notifyPublishMessage(msg);
@@ -655,7 +654,7 @@ export class ProtocolHandler implements PingerCallback {
             case 2: {
                 this.incommingPublish.set(pktID, msg);
                 // construct PUBREC packet
-                const pubRecPkt = new MQTTPubRecPacket(pktID, {reason: MQTTPubRecReason.Code.Success});
+                const pubRecPkt = new MQTTPubRecPacket(pktID, { reason: MQTTPubRecReason.Code.Success });
                 this.schedule(pubRecPkt.build());
                 break;
             }
@@ -674,13 +673,13 @@ export class ProtocolHandler implements PingerCallback {
             }
 
             case PacketType.PUBLISH: {
-                const {pktID, result} = decodePublishPacket(byte0, decoder);
+                const { pktID, result } = decodePublishPacket(byte0, decoder);
                 this.publishReceived(pktID, result);
                 break;
             }
 
             case PacketType.PUBACK: {
-                const {pktID} = decodePubAckPacket(byte0, decoder);
+                const { pktID } = decodePubAckPacket(byte0, decoder);
                 this.completePublishMessage(pktID);
                 this.outgoingRequests.delete(pktID);
                 this.pidgen.freeID(pktID);
@@ -688,19 +687,19 @@ export class ProtocolHandler implements PingerCallback {
             }
 
             case PacketType.PUBREC: {
-                const {pktID} = decodePubRecPacket(byte0, decoder);
+                const { pktID } = decodePubRecPacket(byte0, decoder);
                 // build PUBREL request
-                const pubRelPkt = new MQTTPubRelPacket(pktID, {reason: MQTTPubRelReason.Code.Success});
+                const pubRelPkt = new MQTTPubRelPacket(pktID, { reason: MQTTPubRelReason.Code.Success });
                 this.outgoingRequests.set(pktID, pubRelPkt);
                 this.schedule(pubRelPkt.build());
                 break;
             }
 
             case PacketType.PUBREL: {
-                const {pktID} = decodePubRelPacket(byte0, decoder);
+                const { pktID } = decodePubRelPacket(byte0, decoder);
                 this.outgoingRequests.delete(pktID);
                 // build PUBCOMP request
-                const pubCompPkt = new MQTTPubCompPacket(pktID, {reason: MQTTPubCompReason.Code.Success});
+                const pubCompPkt = new MQTTPubCompPacket(pktID, { reason: MQTTPubCompReason.Code.Success });
                 this.schedule(pubCompPkt.build());
                 // notify the incomming publish
                 if (this.incommingPublish.has(pktID)) {
@@ -714,7 +713,7 @@ export class ProtocolHandler implements PingerCallback {
             }
 
             case PacketType.PUBCOMP: {
-                const {pktID} = decodePubCompPacket(byte0, decoder);
+                const { pktID } = decodePubCompPacket(byte0, decoder);
                 this.outgoingRequests.delete(pktID);
                 this.completePublishMessage(pktID);
                 this.pidgen.freeID(pktID);
@@ -722,7 +721,7 @@ export class ProtocolHandler implements PingerCallback {
             }
 
             case PacketType.SUBACK: {
-                const {pktID, result} = decodeSubAckPacket(decoder);
+                const { pktID, result } = decodeSubAckPacket(decoder);
                 this.completeSubscribeMessage(pktID, result);
                 this.outgoingRequests.delete(pktID);
                 this.pidgen.freeID(pktID);
@@ -730,7 +729,7 @@ export class ProtocolHandler implements PingerCallback {
             }
 
             case PacketType.UNSUBACK: {
-                const {pktID, result} = decodeUnsubAckPacket(decoder);
+                const { pktID, result } = decodeUnsubAckPacket(decoder);
                 // return the payload
                 this.completeUnsubscribeMessage(pktID, result);
                 this.outgoingRequests.delete(pktID);
@@ -739,7 +738,6 @@ export class ProtocolHandler implements PingerCallback {
             }
 
             case PacketType.DISCONNECT: {
-                console.log("DISCONNECT recvd");
                 const mqttDisconnect = decodeDisconnectPacket(decoder);
                 throw new ServerDisconnectedError(new MQTTDisconnectReason(mqttDisconnect.reasonCode));
             }
@@ -787,7 +785,11 @@ export class ProtocolHandler implements PingerCallback {
                 this.decodeMessage(byte0, decoderToUse);
             }
         }
-        catch (e) {
+        catch (e: unknown) {
+            if (!(e instanceof Error)) {
+                return;
+            }
+
             this.eventEmitter.emit("disconnected", e);
             if (e instanceof ServerDisconnectedError) {
                 // Server sent DISCONNECT packet
@@ -795,13 +797,13 @@ export class ProtocolHandler implements PingerCallback {
             } else {
                 this.trace(e.message);
                 // pass the error code
-                this.sendDisconnect({reasonCode: MQTTDisconnectReason.Code.ProtocolError});
+                this.sendDisconnect({ reasonCode: MQTTDisconnectReason.Code.ProtocolError });
             }
             this.internalDisconnect(e);
         }
     }
 
     private trace(msg: string): void {
-        const ret = this.eventEmitter.emit('logs', {epochTSInMS: new Date().getTime(), message: msg});
+        this.eventEmitter.emit('logs', { epochTSInMS: new Date().getTime(), message: msg });
     }
 }

@@ -1,22 +1,22 @@
-import {DataStreamDecoder, encodedVarUint32Size} from "../utils/codec";
-import WebSocket = require('ws');
-import {PacketType} from '../utils/constants';
-import {decodeConnectPacket} from "../message/connect";
-import {encodeConnAckPacket, MQTTConnAck} from "../message/connack";
-import {decodeSubscribePacket, MQTTSubAck, SubAckPacket} from "../message/subscribe";
-import {decodeUnsubAckPacket, MQTTUnsubAck, UnsubAckPacket} from "../message/unsubscribe";
-import {decodePublishPacket, MQTTPublish, PublishPacket} from "../message/publish";
-import {MQTTPubAck, MQTTPubAckPacket, decodePubAckPacket} from "../message/puback";
-import {MQTTPubRec, MQTTPubRecPacket, decodePubRecPacket} from "../message/pubrec";
-import {MQTTPubComp, MQTTPubCompPacket, decodePubCompPacket} from "../message/pubcomp";
-import {decodePubRelPacket, MQTTPubRel, MQTTPubRelPacket} from "../message/pubrel";
+import { DataStreamDecoder, encodedVarUint32Size } from "../utils/codec";
+import * as WebSocket from 'ws';
+import { PacketType } from '../utils/constants';
+import { encodeConnAckPacket, MQTTConnAck } from "../message/connack";
+import { decodeSubscribePacket, MQTTSubAck, SubAckPacket } from "../message/subscribe";
+import { decodeUnsubAckPacket, MQTTUnsubAck, UnsubAckPacket } from "../message/unsubscribe";
+import { decodePublishPacket, MQTTPublish, MQTTPublishPacket } from "../message/publish";
+import { MQTTPubAck, MQTTPubAckPacket, decodePubAckPacket } from "../message/puback";
+import { MQTTPubRec, MQTTPubRecPacket, decodePubRecPacket } from "../message/pubrec";
+import { MQTTPubComp, MQTTPubCompPacket, decodePubCompPacket } from "../message/pubcomp";
+import { decodePubRelPacket, MQTTPubRel, MQTTPubRelPacket } from "../message/pubrel";
+import { PacketWithID } from "../message/packet";
 
 export class testMockServer {
     private port = 3000;
     private server: WebSocket.Server
     private remainingBuffer?: Uint8Array;
     private connAckPacket: MQTTConnAck;
-    private responses?: Map<PacketType, MQTTSubAck | MQTTUnsubAck | MQTTPublish | MQTTPubAck | MQTTPubRec | MQTTPubRel | MQTTPubComp>;
+    private responses: Map<PacketType, MQTTSubAck | MQTTUnsubAck | MQTTPublish | MQTTPubAck | MQTTPubRec | MQTTPubRel | MQTTPubComp> = new Map();
     private conn?: WebSocket;
     private triggerPublishOnsubscribe: boolean;
     private publishAckd: boolean;
@@ -24,7 +24,7 @@ export class testMockServer {
     private numRecvdPkts: number;
 
     constructor(connack: MQTTConnAck, disconnectAtPktCount?: number) {
-        this.server = new WebSocket.Server({port: this.port});
+        this.server = new WebSocket.Server({ port: this.port });
         this.connAckPacket = connack;
         this.triggerPublishOnsubscribe = false;
         this.publishAckd = false;
@@ -32,11 +32,11 @@ export class testMockServer {
         this.disconnectAtPktCount = disconnectAtPktCount ? disconnectAtPktCount : 0;
     }
 
-    setResponses(responses: Map<PacketType, MQTTSubAck | MQTTUnsubAck | MQTTPublish | MQTTPubAck | MQTTPubRec | MQTTPubRel | MQTTPubComp>) {
+    setResponses(responses: Map<PacketType, MQTTSubAck | MQTTUnsubAck | MQTTPublish | MQTTPubAck | MQTTPubRec | MQTTPubRel | MQTTPubComp>): void {
         this.responses = responses;
     }
 
-    setTriggerPublishOnSubscribe() {
+    setTriggerPublishOnSubscribe(): void {
         this.triggerPublishOnsubscribe = true;
     }
 
@@ -44,7 +44,7 @@ export class testMockServer {
         return this.publishAckd;
     }
 
-    start() {
+    start(): void {
         this.server.on('connection', conn => {
             this.conn = conn;
             conn.on('message', (data: WebSocket.Data) => {
@@ -54,11 +54,23 @@ export class testMockServer {
     }
 
     closeClientConnection(): void {
-        this.conn!.close();
+        if (this.conn) {
+            this.conn.close();
+        }
     }
 
-    stop() {
+    stop(): void {
         this.server.close();
+    }
+
+    sendResponse<T extends PacketWithID, MQTTP extends unknown>(pktID: number, pktType: PacketType, objectType: { new(pktID: number, mqttObj: MQTTP): T; }): void {
+        const resp = this.responses.get(pktType);
+        if (resp && this.conn) {
+            const respPkt = new objectType(pktID, resp as MQTTP);
+            this.conn.send(respPkt.build());
+        } else {
+            throw new Error("MOCK server - internal error");
+        }
     }
 
     handler(data: WebSocket.Data): void | never {
@@ -101,23 +113,20 @@ export class testMockServer {
     handleMessage(byte0: number, dec: DataStreamDecoder): void | never {
         switch (byte0 >> 4) {
             case PacketType.CONNECT: {
-                const mqttConnect = decodeConnectPacket(dec);
-                this.conn!.send(encodeConnAckPacket(this.connAckPacket));
+                if (this.conn) {
+                    this.conn.send(encodeConnAckPacket(this.connAckPacket));
+                }
                 break;
             }
             case PacketType.DISCONNECT:
-                this.conn!.close();
+                if (this.conn) {
+                    this.conn.close();
+                }
                 this.conn = undefined;
                 break;
             case PacketType.SUBSCRIBE: {
                 const mqttSubscribe = decodeSubscribePacket(dec);
-                const suback = this.responses!.get(PacketType.SUBACK);
-                if (suback) {
-                    const subackPkt = new SubAckPacket(mqttSubscribe.pktID, suback as MQTTSubAck);
-                    this.conn!.send(subackPkt.build());
-                } else {
-                    throw new Error("MOCK server - internal error");
-                }
+                this.sendResponse<SubAckPacket, MQTTSubAck>(mqttSubscribe.pktID, PacketType.SUBACK, SubAckPacket);
                 if (this.triggerPublishOnsubscribe) {
                     setTimeout(() => {
                         this.triggerPublish();
@@ -127,36 +136,18 @@ export class testMockServer {
             }
             case PacketType.UNSUBSCRIBE: {
                 const mqttUnsubscribe = decodeUnsubAckPacket(dec);
-                const unsuback = this.responses!.get(PacketType.UNSUBACK);
-                if (unsuback) {
-                    const unsubackPkt = new UnsubAckPacket(mqttUnsubscribe.pktID, unsuback as MQTTUnsubAck);
-                    this.conn!.send(unsubackPkt.build());
-                } else {
-                    throw new Error("MOCK server - internal error");
-                }
+                this.sendResponse<UnsubAckPacket, MQTTUnsubAck>(mqttUnsubscribe.pktID, PacketType.UNSUBACK, UnsubAckPacket);
                 break;
             }
             case PacketType.PUBLISH: {
-                const {pktID, result} = decodePublishPacket(byte0, dec);
+                const { pktID, result } = decodePublishPacket(byte0, dec);
                 switch (result.qos) {
                     case 1: {
-                        const puback = this.responses!.get(PacketType.PUBACK);
-                        if (puback) {
-                            const pubackPkt = new MQTTPubAckPacket(pktID, puback as MQTTPubAck);
-                            this.conn!.send(pubackPkt.build());
-                        } else {
-                            throw new Error("MOCK server - internal error");
-                        }
+                        this.sendResponse<MQTTPubAckPacket, MQTTPubAck>(pktID, PacketType.PUBACK, MQTTPubAckPacket);
                         break;
                     }
                     case 2: {
-                        const pubrec = this.responses!.get(PacketType.PUBREC);
-                        if (pubrec) {
-                            const pubrecPkt = new MQTTPubRecPacket(pktID, pubrec as MQTTPubRec);
-                            this.conn!.send(pubrecPkt.build());
-                        } else {
-                            throw new Error("MOCK server - internal error");
-                        }
+                        this.sendResponse<MQTTPubRecPacket, MQTTPubRec>(pktID, PacketType.PUBREC, MQTTPubRecPacket);
                         break;
                     }
                 }
@@ -164,7 +155,7 @@ export class testMockServer {
             }
 
             case PacketType.PUBACK: {
-                const {pktID} = decodePubAckPacket(byte0, dec);
+                const { pktID } = decodePubAckPacket(byte0, dec);
                 if (pktID == 0) {
                     throw new Error("MOCK server - internal error, invalid pkt id received for PUBACK");
                 }
@@ -173,31 +164,19 @@ export class testMockServer {
             }
 
             case PacketType.PUBREC: {
-                const {pktID} = decodePubRecPacket(byte0, dec);
-                const pubrel = this.responses!.get(PacketType.PUBREL);
-                if (pubrel) {
-                    const pubrelPkt = new MQTTPubRelPacket(pktID, pubrel as MQTTPubRel);
-                    this.conn!.send(pubrelPkt.build());
-                } else {
-                    throw new Error("MOCK server - internal error");
-                }
+                const { pktID } = decodePubRecPacket(byte0, dec);
+                this.sendResponse<MQTTPubRelPacket, MQTTPubRel>(pktID, PacketType.PUBREL, MQTTPubRelPacket);
                 break;
             }
 
             case PacketType.PUBREL: {
-                const {pktID} = decodePubRelPacket(byte0, dec);
-                const pubcomp = this.responses!.get(PacketType.PUBCOMP);
-                if (pubcomp) {
-                    const pubcompPkt = new MQTTPubCompPacket(pktID, pubcomp as MQTTPubComp);
-                    this.conn!.send(pubcompPkt.build());
-                } else {
-                    throw new Error("MOCK server - internal error");
-                }
+                const { pktID } = decodePubRelPacket(byte0, dec);
+                this.sendResponse<MQTTPubCompPacket, MQTTPubComp>(pktID, PacketType.PUBCOMP, MQTTPubCompPacket);
                 break;
             }
 
             case PacketType.PUBCOMP: {
-                const {pktID} = decodePubCompPacket(byte0, dec);
+                const { pktID } = decodePubCompPacket(byte0, dec);
                 if (pktID == 0) {
                     throw new Error("MOCK server - internal error, invalid pkt id received for PUBCOMP");
                 }
@@ -211,11 +190,7 @@ export class testMockServer {
     }
 
     triggerPublish(): void {
-        const publish = this.responses!.get(PacketType.PUBLISH);
-        if (publish) {
-            const pktID = Math.floor(Math.random() * 100) + 1;
-            const publishPkt = new PublishPacket(pktID, publish as MQTTPublish);
-            this.conn!.send(publishPkt.build());
-        }
+        const pktID = Math.floor(Math.random() * 100) + 1;
+        this.sendResponse<MQTTPublishPacket, MQTTPublish>(pktID, PacketType.PUBLISH, MQTTPublishPacket);
     }
 }
