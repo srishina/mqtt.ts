@@ -21,7 +21,7 @@ describe('MQTT topic tests', () => {
             'pub/ /topic',
         ]
 
-        validPublishTopics.forEach(function (element) {
+        validPublishTopics.forEach(function(element) {
             expect(isPublishTopicValid(element)).to.be.true
         })
     })
@@ -41,7 +41,7 @@ describe('MQTT topic tests', () => {
             '+/pub/topic',
         ]
 
-        invalidPublishTopics.forEach(function (element) {
+        invalidPublishTopics.forEach(function(element) {
             expect(isPublishTopicValid(element)).to.be.false
         })
     })
@@ -64,7 +64,7 @@ describe('MQTT topic tests', () => {
             'sub/topic/+/#',
         ]
 
-        validSubscribeTopics.forEach(function (element) {
+        validSubscribeTopics.forEach(function(element) {
             expect(isSubscribeTopicValid(element)).to.be.true
         })
     })
@@ -83,13 +83,13 @@ describe('MQTT topic tests', () => {
             '',
         ]
 
-        invalidSubscribeTopics.forEach(function (element) {
+        invalidSubscribeTopics.forEach(function(element) {
             expect(isSubscribeTopicValid(element)).to.be.false
         })
     })
 
     it('Topic successful matches', () => {
-        const matchHelper = function (subtopic: string, topic: string) {
+        const matchHelper = function(subtopic: string, topic: string) {
             const matcher = new TopicMatcher<number>()
             try {
                 const tSubscriber = new emptyTestSubscriber()
@@ -122,7 +122,7 @@ describe('MQTT topic tests', () => {
             ['/#', '/foo/bar']
         ])
 
-        subscribeTopics.forEach(function (value, key) {
+        subscribeTopics.forEach(function(value, key) {
             const matcher = new TopicMatcher<number>()
             const tSubscriber = new emptyTestSubscriber()
 
@@ -134,7 +134,7 @@ describe('MQTT topic tests', () => {
     })
 
     it('Topic unsuccessful matches', () => {
-        const noMatchHelper = function (subtopic: string, topic: string) {
+        const noMatchHelper = function(subtopic: string, topic: string) {
             const matcher = new TopicMatcher<number>()
             try {
                 const tSubscriber = new emptyTestSubscriber()
@@ -153,7 +153,7 @@ describe('MQTT topic tests', () => {
         noMatchHelper('foo/+/#', 'fo2/bar/baz')
         noMatchHelper('/#', 'foo/bar')
 
-        const noMatchThrowHelper = function (subtopic: string, topic: string) {
+        const noMatchThrowHelper = function(subtopic: string, topic: string) {
             const matcher = new TopicMatcher<number>()
             const tSubscriber = new emptyTestSubscriber()
             matcher.subscribe(subtopic, tSubscriber)
@@ -210,7 +210,7 @@ describe('MQTT topic tests', () => {
         const matcher = new TopicMatcher<number>()
         const tSubscriber = new emptyTestSubscriber()
 
-        subscribeTopics.forEach(function (el) {
+        subscribeTopics.forEach(function(el) {
             matcher.subscribe(el, tSubscriber)
         })
 

@@ -34,7 +34,7 @@ function delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-describe('MQTT client connection test with a mock server', function () {
+describe('MQTT client connection test with a mock server', function() {
     this.timeout(10000)
 
     it('Simple MQTT Client connect/close', async () => {

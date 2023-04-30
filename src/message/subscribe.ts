@@ -52,7 +52,7 @@ export class SubscribePacket extends PacketWithID {
         const propertyLen = this.propertyLength()
 
         let remainingLength = (2 + propertyLen + encodedVarUint32Size(propertyLen))
-        this.msg.subscriptions.forEach(function (el) {
+        this.msg.subscriptions.forEach(function(el) {
             remainingLength += (2 + el.topicFilter.length + 1)
         })
 
@@ -66,7 +66,7 @@ export class SubscribePacket extends PacketWithID {
         // encode properties
         this.encodeProperties(encoder, propertyLen)
 
-        this.msg.subscriptions.forEach(function (el) {
+        this.msg.subscriptions.forEach(function(el) {
             encoder.encodeUTF8String(el.topicFilter)
 
             const qos = (el.qos ? el.qos : 0)

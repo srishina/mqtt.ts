@@ -50,7 +50,7 @@ describe('MQTT data stream enc/dec', () => {
             [268435455, [0xFF, 0xFF, 0xFF, 0x7F]],
         ])
 
-        nums.forEach(function (value, key) {
+        nums.forEach(function(value, key) {
             const enc = new DataStreamEncoder(value.length)
             expect(() => enc.encodeVarUint32(key)).to.not.throw()
             expect([...new Uint8Array(enc.buffer)]).to.eql(value)
@@ -87,7 +87,7 @@ describe('MQTT data stream enc/dec', () => {
             // ["\u0000FEFF", [0x00, 0x03, 0xEF, 0xBB, 0xBF]] // MQTT-1.5.4-3 fixme?
         ])
 
-        strs.forEach(function (value, key) {
+        strs.forEach(function(value, key) {
             const enc = new DataStreamEncoder(value.length)
             expect(() => enc.encodeUTF8String(key)).to.not.throw()
             expect([...new Uint8Array(enc.buffer)]).to.eql(value)

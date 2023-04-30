@@ -36,7 +36,7 @@ export class UnsubscribePacket extends PacketWithID {
         const propertyLen = this.propertyLength()
 
         let remainingLength = (2 + propertyLen + encodedVarUint32Size(propertyLen))
-        this.msg.topicFilters.forEach(function (el) {
+        this.msg.topicFilters.forEach(function(el) {
             remainingLength += (2 + el.length)
         })
 
@@ -50,7 +50,7 @@ export class UnsubscribePacket extends PacketWithID {
         // properties length
         this.encodeProperties(encoder, propertyLen)
 
-        this.msg.topicFilters.forEach(function (el) {
+        this.msg.topicFilters.forEach(function(el) {
             encoder.encodeUTF8String(el)
         })
 

@@ -106,7 +106,7 @@ export class TopicMatcher<T> {
 
         let cur = this.root
 
-        topic.split('/').forEach(function (el) {
+        topic.split('/').forEach(function(el) {
             let child = cur.getChildren(el)
             if (!child) {
                 child = new Node(el, cur)
@@ -125,7 +125,7 @@ export class TopicMatcher<T> {
 
         let cur = this.root
 
-        topic.split('/').forEach(function (el) {
+        topic.split('/').forEach(function(el) {
             const child = cur.getChildren(el)
             if (!child) {
                 return
