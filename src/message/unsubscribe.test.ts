@@ -1,6 +1,6 @@
 import * as chai from 'chai'
-import type {MQTTUnsubscribe} from './unsubscribe'
-import { UnsubscribePacket} from './unsubscribe'
+import type { MQTTUnsubscribe } from './unsubscribe'
+import { UnsubscribePacket } from './unsubscribe'
 
 const expect = chai.expect
 describe('MQTT UNSUBSCRIBE tests', () => {
@@ -13,7 +13,7 @@ describe('MQTT UNSUBSCRIBE tests', () => {
             0x00, 0x05, 0x68, 0x65, 0x6C, 0x6C, 0x6F,
         ])
 
-        const unsub: MQTTUnsubscribe = {topicFilters: ['foo', 'hello']}
+        const unsub: MQTTUnsubscribe = { topicFilters: ['foo', 'hello'] }
         expect(new UnsubscribePacket(16, unsub).build()).to.eql(encoded)
     })
 })

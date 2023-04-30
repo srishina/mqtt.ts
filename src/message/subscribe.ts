@@ -1,8 +1,8 @@
-import {PacketWithID} from './packet'
-import {PacketType, PropertyID, MQTTCommonReasonCode, getPropertyText, getCommonReasonCodeName} from '../utils/constants'
-import type { DataStreamDecoder} from '../utils/codec'
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from '../utils/codec'
-import {DecoderError} from '../client/errors'
+import { PacketWithID } from './packet'
+import { PacketType, PropertyID, MQTTCommonReasonCode, getPropertyText, getCommonReasonCodeName } from '../utils/constants'
+import type { DataStreamDecoder } from '../utils/codec'
+import { PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce } from '../utils/codec'
+import { DecoderError } from '../client/errors'
 
 export type MQTTSubscription = {
     topicFilter: string;
@@ -93,10 +93,10 @@ export class SubscribePacket extends PacketWithID {
     }
 }
 
-export function decodeSubscribePacket(dec: DataStreamDecoder): {pktID: number, result: MQTTSubscribe} | never {
+export function decodeSubscribePacket(dec: DataStreamDecoder): { pktID: number, result: MQTTSubscribe } | never {
     const pktID = dec.decodeUint16()
 
-    const data: MQTTSubscribe = {subscriptions: []}
+    const data: MQTTSubscribe = { subscriptions: [] }
     // decode properties
     let propertyLen = dec.decodeVarUint32()
     if (propertyLen) {
@@ -117,7 +117,7 @@ export function decodeSubscribePacket(dec: DataStreamDecoder): {pktID: number, r
                 if (!data.properties.userProperty) {
                     data.properties.userProperty = new Map<string, string>()
                 }
-                const {key, value} = dec.decodeUTF8StringPair()
+                const { key, value } = dec.decodeUTF8StringPair()
                 data.properties.userProperty.set(key, value)
                 propertyLen -= (key.length + value.length + 4)
                 break
@@ -128,7 +128,7 @@ export function decodeSubscribePacket(dec: DataStreamDecoder): {pktID: number, r
     }
 
     while (dec.remainingLength() > 0) {
-        const subscription: MQTTSubscription = {topicFilter: dec.decodeUTF8String()}
+        const subscription: MQTTSubscription = { topicFilter: dec.decodeUTF8String() }
         const options: number = dec.decodeByte()
         subscription.qos = (options & 0x03)
         subscription.noLocal = (options & 0x04) == 1
@@ -138,7 +138,7 @@ export function decodeSubscribePacket(dec: DataStreamDecoder): {pktID: number, r
         data.subscriptions.push(subscription)
     }
 
-    return {pktID: pktID, result: data}
+    return { pktID: pktID, result: data }
 }
 
 export namespace MQTTSubAckReason {
@@ -240,7 +240,7 @@ export class SubAckPacket extends PacketWithID {
     }
 }
 
-export function decodeSubAckPacket(dec: DataStreamDecoder): {pktID: number, result: MQTTSubAck} {
+export function decodeSubAckPacket(dec: DataStreamDecoder): { pktID: number, result: MQTTSubAck } {
     const pktID = dec.decodeUint16()
 
     let props: MQTTSubAckProperties | undefined
@@ -263,7 +263,7 @@ export function decodeSubAckPacket(dec: DataStreamDecoder): {pktID: number, resu
                 if (!props.userProperty) {
                     props.userProperty = new Map<string, string>()
                 }
-                const {key, value} = dec.decodeUTF8StringPair()
+                const { key, value } = dec.decodeUTF8StringPair()
                 props.userProperty.set(key, value)
                 propertyLen -= (key.length + value.length + 4)
                 break
@@ -276,11 +276,11 @@ export function decodeSubAckPacket(dec: DataStreamDecoder): {pktID: number, resu
 
     const payload = dec.decodeBinaryDataNoLength(dec.remainingLength())
 
-    const result: MQTTSubAck = {reasonCodes: [], properties: props}
+    const result: MQTTSubAck = { reasonCodes: [], properties: props }
 
     payload.forEach(el => {
         result.reasonCodes.push(el)
     })
 
-    return {pktID: pktID, result: result}
+    return { pktID: pktID, result: result }
 }

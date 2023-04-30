@@ -1,8 +1,8 @@
-import {PacketWithID} from './packet'
-import type { DataStreamDecoder} from '../utils/codec'
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from '../utils/codec'
-import {getPropertyText, PacketType, PropertyID} from '../utils/constants'
-import {DecoderError} from '../client/errors'
+import { PacketWithID } from './packet'
+import type { DataStreamDecoder } from '../utils/codec'
+import { PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce } from '../utils/codec'
+import { getPropertyText, PacketType, PropertyID } from '../utils/constants'
+import { DecoderError } from '../client/errors'
 
 export function getPayloadAsArray(payload: Uint8Array | string): Uint8Array {
     if (typeof payload === 'string') {
@@ -131,8 +131,8 @@ export class MQTTPublishPacket extends PacketWithID {
     }
 }
 
-export function decodePublishPacket(byte0: number, dec: DataStreamDecoder): {pktID: number, result: MQTTPublish} {
-    const data: MQTTPublish = {topic: '', payload: new Uint8Array()}
+export function decodePublishPacket(byte0: number, dec: DataStreamDecoder): { pktID: number, result: MQTTPublish } {
+    const data: MQTTPublish = { topic: '', payload: new Uint8Array() }
 
     data.qos = (byte0 >> 1) & 0x03
     data.dup = (byte0 & 0x08) > 0
@@ -190,7 +190,7 @@ export function decodePublishPacket(byte0: number, dec: DataStreamDecoder): {pkt
                 if (!data.properties.userProperty) {
                     data.properties.userProperty = new Map<string, string>()
                 }
-                const {key, value} = dec.decodeUTF8StringPair()
+                const { key, value } = dec.decodeUTF8StringPair()
                 data.properties.userProperty.set(key, value)
                 propertyLen -= (key.length + value.length + 4)
                 break
@@ -223,5 +223,5 @@ export function decodePublishPacket(byte0: number, dec: DataStreamDecoder): {pkt
 
     data.payload = dec.decodeBinaryDataNoLength(dec.remainingLength())
 
-    return {pktID: pktID, result: data}
+    return { pktID: pktID, result: data }
 }

@@ -1,7 +1,7 @@
-import {decodeMQTTPublishResponse, PublishResponsePacket} from './packet'
-import type { DataStreamEncoder, DataStreamDecoder} from '../utils/codec'
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty} from '../utils/codec'
-import {PacketType, PropertyID, MQTTCommonReasonCode, getCommonReasonCodeName} from '../utils/constants'
+import { decodeMQTTPublishResponse, PublishResponsePacket } from './packet'
+import type { DataStreamEncoder, DataStreamDecoder } from '../utils/codec'
+import { PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty } from '../utils/codec'
+import { PacketType, PropertyID, MQTTCommonReasonCode, getCommonReasonCodeName } from '../utils/constants'
 
 export namespace MQTTPubRecReason {
     export enum Code {
@@ -90,9 +90,9 @@ export class MQTTPubRecPacket extends PublishResponsePacket {
     }
 }
 
-export function decodePubRecPacket(byte0: number, dec: DataStreamDecoder): {pktID: number, pubrec: MQTTPubRec} {
-    const {pktID, result} = decodeMQTTPublishResponse(byte0, dec)
+export function decodePubRecPacket(byte0: number, dec: DataStreamDecoder): { pktID: number, pubrec: MQTTPubRec } {
+    const { pktID, result } = decodeMQTTPublishResponse(byte0, dec)
     return {
-        pktID: pktID, pubrec: {reason: result.reasonCode, properties: {reasonString: result.reasonString, userProperty: result.userProperty}}
+        pktID: pktID, pubrec: { reason: result.reasonCode, properties: { reasonString: result.reasonString, userProperty: result.userProperty } }
     }
 }

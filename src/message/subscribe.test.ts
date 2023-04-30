@@ -1,5 +1,5 @@
-import type {MQTTSubscription, MQTTSubscribe} from './subscribe'
-import { SubscribePacket} from './subscribe'
+import type { MQTTSubscription, MQTTSubscribe } from './subscribe'
+import { SubscribePacket } from './subscribe'
 
 import * as chai from 'chai'
 
@@ -19,15 +19,15 @@ describe('MQTT SUBSCRIBE data model tests', () => {
         const topicFilters: string[] = ['a/b', 'c/d', 'e/f/g']
 
         // with QoS 1
-        const s: MQTTSubscription = {topicFilter: topicFilters[0], qos: 1}
+        const s: MQTTSubscription = { topicFilter: topicFilters[0], qos: 1 }
 
         // with QoS 2
-        const s2: MQTTSubscription = {topicFilter: topicFilters[1], qos: 2, noLocal: true}
+        const s2: MQTTSubscription = { topicFilter: topicFilters[1], qos: 2, noLocal: true }
 
         // with QoS 0 - default
-        const s3: MQTTSubscription = {topicFilter: topicFilters[2]}
+        const s3: MQTTSubscription = { topicFilter: topicFilters[2] }
 
-        const subscribe: MQTTSubscribe = {subscriptions: [s, s2, s3]}
+        const subscribe: MQTTSubscribe = { subscriptions: [s, s2, s3] }
         const subscBuf = new SubscribePacket(18, subscribe)
         expect(subscBuf.build()).to.eql(encoded)
     })
@@ -45,9 +45,9 @@ describe('MQTT SUBSCRIBE data model tests', () => {
         const topicFilters: string[] = ['a/b', 'c/d', 'e/f/g']
 
         // with QoS 1
-        const s: MQTTSubscription = {topicFilter: topicFilters[0], qos: 1}
+        const s: MQTTSubscription = { topicFilter: topicFilters[0], qos: 1 }
 
-        const subscribe: MQTTSubscribe = {subscriptions: [s], properties: {subscriptionIdentifer: 10}}
+        const subscribe: MQTTSubscribe = { subscriptions: [s], properties: { subscriptionIdentifer: 10 } }
         const subscBuf = new SubscribePacket(18, subscribe)
         expect(subscBuf.build()).to.eql(encoded)
     })

@@ -1,4 +1,4 @@
-    import * as mqttv5 from './../dist.browser/index.js'
+import * as mqttv5 from './../dist.browser/index.js'
 
 let mqttClient: mqttv5.MQTTClient | undefined = undefined
 
@@ -83,8 +83,8 @@ function subscribe(): void {
 
     const topic = (<HTMLInputElement>document.getElementById('subscribe-topic-input')).value
     const qos = (<HTMLInputElement>document.getElementById('subscribe-qos-input')).value
-    const s: mqttv5.MQTTSubscription = {topicFilter: topic, qos: parseInt(qos)}
-    const result = mqttClient.subscribe({subscriptions: [s]}, subscriber)
+    const s: mqttv5.MQTTSubscription = { topicFilter: topic, qos: parseInt(qos) }
+    const result = mqttClient.subscribe({ subscriptions: [s] }, subscriber)
     // eslint-disable-next-line
     result.then((suback: mqttv5.MQTTSubAck) => {
         logMessage('SUBSCRIBE successful')
@@ -97,9 +97,9 @@ function subscribe(): void {
 
 function unsubscribe(): void {
     const topic = (<HTMLInputElement>document.getElementById('unsubscribe-topic-input')).value
-    let unsubscribe: mqttv5.MQTTUnsubscribe = {topicFilters: []}
+    let unsubscribe: mqttv5.MQTTUnsubscribe = { topicFilters: [] }
     if (topic.length > 0) {
-        unsubscribe = {topicFilters: [topic]}
+        unsubscribe = { topicFilters: [topic] }
     } else {
         const selected = $('#subscriptions-input').find('option:selected')
         if (selected.length > 0) {
@@ -134,7 +134,7 @@ function publish(): void {
     const qos = (<HTMLInputElement>document.getElementById('publish-qos-input')).value
     const payload = (<HTMLInputElement>document.getElementById('publish-msg-input')).value
 
-    const mqttPublish: mqttv5.MQTTPublish = {topic: topic, qos: parseInt(qos), payload: payload}
+    const mqttPublish: mqttv5.MQTTPublish = { topic: topic, qos: parseInt(qos), payload: payload }
 
     const result = mqttClient.publish(mqttPublish)
     result.then(() => {
@@ -157,7 +157,8 @@ function onConnected(uri: string) {
 function onConnectionError(err?: any) {
     const el = document.getElementById('connection-card-status-text')
     if (el) {
-    el.innerHTML = `- Disconnected with ${err.message}`}
+        el.innerHTML = `- Disconnected with ${err.message}`
+    }
 }
 
 function onConnect(): void {
@@ -175,7 +176,7 @@ function onConnect(): void {
     const keepAlive = (<HTMLInputElement>document.getElementById('keep-alive-input')).value
     const cleanSesssion = (<HTMLInputElement>document.getElementById('clean-session-input')).checked
 
-    const mqttConnect: mqttv5.MQTTConnect = {keepAlive: parseInt(keepAlive), cleanStart: cleanSesssion}
+    const mqttConnect: mqttv5.MQTTConnect = { keepAlive: parseInt(keepAlive), cleanStart: cleanSesssion }
     if (clientID.length > 0) {
         mqttConnect.clientIdentifier = clientID
     }
@@ -188,7 +189,7 @@ function onConnect(): void {
         mqttConnect.password = mqttv5.getPayloadAsArray(pwd)
     }
 
-    mqttClient = new mqttv5.MQTTClient(url, {timeout: 2000})
+    mqttClient = new mqttv5.MQTTClient(url, { timeout: 2000 })
     // setup event handlers
     mqttClient.on('logs', (entry: mqttv5.LogEntry) => {
         logMessage(entry.message)
@@ -257,7 +258,7 @@ function addSubscribedTopic(topic: string): void {
 
     const subscriptionsEl = $('#subscriptions-input')
     const opt = $('<option/>')
-    opt.attr({'value': topic}).text(topic)
+    opt.attr({ 'value': topic }).text(topic)
     subscriptionsEl.append(opt)
 
     changeSelectElementTitleIfNeeded(subscriptionsEl)
@@ -280,8 +281,8 @@ function removeSelected(): void {
 function changeSelectElementTitleIfNeeded(el: JQuery<HTMLElement>): void {
     const optionsLen = el.children('option').length
     if (optionsLen == 1) {
-        el.selectpicker({title: 'Select a subscription'})
+        el.selectpicker({ title: 'Select a subscription' })
     } else if (optionsLen == 0) {
-        el.selectpicker({title: 'No subscriptions available...'})
+        el.selectpicker({ title: 'No subscriptions available...' })
     }
 }

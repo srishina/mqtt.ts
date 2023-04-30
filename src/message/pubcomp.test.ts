@@ -1,6 +1,6 @@
 import * as chai from 'chai'
-import {PropertyID} from '../utils/constants'
-import {MQTTPubCompPacket, MQTTPubCompReason} from './pubcomp'
+import { PropertyID } from '../utils/constants'
+import { MQTTPubCompPacket, MQTTPubCompReason } from './pubcomp'
 
 const expect = chai.expect
 describe('MQTT PUBCOMP test', () => {
@@ -12,7 +12,7 @@ describe('MQTT PUBCOMP test', () => {
             0x00, id,
         ])
 
-        const pubcomp = new MQTTPubCompPacket(id, {reason: MQTTPubCompReason.Code.Success})
+        const pubcomp = new MQTTPubCompPacket(id, { reason: MQTTPubCompReason.Code.Success })
         expect(pubcomp.build()).to.eql(encoded)
     })
 
@@ -32,7 +32,7 @@ describe('MQTT PUBCOMP test', () => {
             ...reasonBytes
         ])
 
-        const pubcomp = new MQTTPubCompPacket(id, {reason: MQTTPubCompReason.Code.Success, properties: {reasonString: reasonString}})
+        const pubcomp = new MQTTPubCompPacket(id, { reason: MQTTPubCompReason.Code.Success, properties: { reasonString: reasonString } })
         expect(pubcomp.build()).to.eql(encoded)
     })
 })

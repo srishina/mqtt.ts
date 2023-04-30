@@ -1,5 +1,5 @@
-import {DecoderError} from '../client/errors'
-import {getPropertyText} from './constants'
+import { DecoderError } from '../client/errors'
+import { getPropertyText } from './constants'
 
 export class DataStreamDecoder {
     private dataView: DataView;
@@ -128,13 +128,13 @@ export class DataStreamDecoder {
         return utf8Dec.decode(data)
     }
 
-    decodeUTF8StringPair(): {key: string, value: string} | never {
+    decodeUTF8StringPair(): { key: string, value: string } | never {
         const data = this.decodeBinaryData()
         const key = new TextDecoder().decode(data)
         const data2 = this.decodeBinaryData()
         const value = new TextDecoder().decode(data2)
 
-        return {key: key, value: value}
+        return { key: key, value: value }
     }
 }
 

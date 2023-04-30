@@ -1,8 +1,8 @@
-import {DecoderError} from '../client/errors'
-import type {DataStreamDecoder} from '../utils/codec'
-import { DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from '../utils/codec'
-import type {PacketType} from '../utils/constants'
-import { PropertyID} from '../utils/constants'
+import { DecoderError } from '../client/errors'
+import type { DataStreamDecoder } from '../utils/codec'
+import { DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce } from '../utils/codec'
+import type { PacketType } from '../utils/constants'
+import { PropertyID } from '../utils/constants'
 
 export abstract class PacketWithID {
     id: number
@@ -60,8 +60,8 @@ export type MQTTPublishResponse = {
     userProperty?: Map<string, string>;
 };
 
-export function decodeMQTTPublishResponse(byte0: number, dec: DataStreamDecoder): {pktID: number, result: MQTTPublishResponse} | never {
-    const data: MQTTPublishResponse = {packetType: (byte0 >> 4), reasonCode: 0}
+export function decodeMQTTPublishResponse(byte0: number, dec: DataStreamDecoder): { pktID: number, result: MQTTPublishResponse } | never {
+    const data: MQTTPublishResponse = { packetType: (byte0 >> 4), reasonCode: 0 }
 
     const pktID = dec.decodeUint16()
     // we have to read reason code and properties only when the remaining length is
@@ -86,7 +86,7 @@ export function decodeMQTTPublishResponse(byte0: number, dec: DataStreamDecoder)
                         if (!data.userProperty) {
                             data.userProperty = new Map<string, string>()
                         }
-                        const {key, value} = dec.decodeUTF8StringPair()
+                        const { key, value } = dec.decodeUTF8StringPair()
                         data.userProperty.set(key, value)
                         propertyLen -= (key.length + value.length + 4)
                         break
@@ -99,7 +99,7 @@ export function decodeMQTTPublishResponse(byte0: number, dec: DataStreamDecoder)
         }
     }
 
-    return {pktID: pktID, result: data}
+    return { pktID: pktID, result: data }
 }
 
 // e.g PINGRESP, PINGREQ

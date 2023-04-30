@@ -1,8 +1,8 @@
-import {PacketWithID} from './packet'
-import {PacketType, PropertyID, MQTTCommonReasonCode, getCommonReasonCodeName} from '../utils/constants'
-import type { DataStreamDecoder} from '../utils/codec'
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from '../utils/codec'
-import {DecoderError} from '../client/errors'
+import { PacketWithID } from './packet'
+import { PacketType, PropertyID, MQTTCommonReasonCode, getCommonReasonCodeName } from '../utils/constants'
+import type { DataStreamDecoder } from '../utils/codec'
+import { PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce } from '../utils/codec'
+import { DecoderError } from '../client/errors'
 
 export type MQTTUnsubscribeProperties = {
     userProperty?: Map<string, string>;
@@ -58,10 +58,10 @@ export class UnsubscribePacket extends PacketWithID {
     }
 }
 
-export function decodeUnsubscribePacket(dec: DataStreamDecoder): {pktID: number, result: MQTTUnsubscribe} | never {
+export function decodeUnsubscribePacket(dec: DataStreamDecoder): { pktID: number, result: MQTTUnsubscribe } | never {
     const pktID = dec.decodeUint16()
 
-    const data: MQTTUnsubscribe = {topicFilters: []}
+    const data: MQTTUnsubscribe = { topicFilters: [] }
     // decode properties
     let propertyLen = dec.decodeVarUint32()
     if (propertyLen > 0) {
@@ -76,7 +76,7 @@ export function decodeUnsubscribePacket(dec: DataStreamDecoder): {pktID: number,
                 if (!data.properties.userProperty) {
                     data.properties.userProperty = new Map<string, string>()
                 }
-                const {key, value} = dec.decodeUTF8StringPair()
+                const { key, value } = dec.decodeUTF8StringPair()
                 data.properties.userProperty.set(key, value)
                 propertyLen -= (key.length + value.length + 4)
                 break
@@ -94,7 +94,7 @@ export function decodeUnsubscribePacket(dec: DataStreamDecoder): {pktID: number,
         throw new Error('Subscription payload MUST contain atleast a topic - protocol error')
     }
 
-    return {pktID: pktID, result: data}
+    return { pktID: pktID, result: data }
 }
 
 export namespace MQTTUnsubAckReason {
@@ -176,7 +176,7 @@ export class UnsubAckPacket extends PacketWithID {
     }
 }
 
-export function decodeUnsubAckPacket(dec: DataStreamDecoder): {pktID: number, result: MQTTUnsubAck} {
+export function decodeUnsubAckPacket(dec: DataStreamDecoder): { pktID: number, result: MQTTUnsubAck } {
     const pktID = dec.decodeUint16()
     let reasonString: string | undefined
     let userProperty: Map<string, string> | undefined
@@ -197,7 +197,7 @@ export function decodeUnsubAckPacket(dec: DataStreamDecoder): {pktID: number, re
                 if (!userProperty) {
                     userProperty = new Map<string, string>()
                 }
-                const {key, value} = dec.decodeUTF8StringPair()
+                const { key, value } = dec.decodeUTF8StringPair()
                 userProperty.set(key, value)
                 propertyLen -= (key.length + value.length + 4)
                 break
@@ -209,10 +209,10 @@ export function decodeUnsubAckPacket(dec: DataStreamDecoder): {pktID: number, re
     }
 
     const payload = dec.decodeBinaryDataNoLength(dec.remainingLength())
-    const result: MQTTUnsubAck = {reasonCodes: [], reasonString: reasonString, userProperty: userProperty}
+    const result: MQTTUnsubAck = { reasonCodes: [], reasonString: reasonString, userProperty: userProperty }
     payload.forEach(el => {
         result.reasonCodes.push(el)
     })
 
-    return {pktID: pktID, result: result}
+    return { pktID: pktID, result: result }
 }

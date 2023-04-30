@@ -1,19 +1,19 @@
-import type { Subscriber} from './protocolhandler'
-import {ProtocolHandler} from './protocolhandler'
-import type {MQTTPublish} from '../message/publish'
-import type {MQTTSubAck, MQTTSubscribe} from '../message/subscribe'
-import type {MQTTUnsubAck, MQTTUnsubscribe} from '../message/unsubscribe'
-import type {MQTTConnAck} from '../message/connack'
-import type {MQTTConnect} from '../message/connect'
+import type { Subscriber } from './protocolhandler'
+import { ProtocolHandler } from './protocolhandler'
+import type { MQTTPublish } from '../message/publish'
+import type { MQTTSubAck, MQTTSubscribe } from '../message/subscribe'
+import type { MQTTUnsubAck, MQTTUnsubscribe } from '../message/unsubscribe'
+import type { MQTTConnAck } from '../message/connack'
+import type { MQTTConnect } from '../message/connect'
 
-import type {MessageEvents} from './eventhandler'
+import type { MessageEvents } from './eventhandler'
 
-import {EventEmitter} from 'events'
+import { EventEmitter } from 'events'
 import type TypedEmitter from 'typed-emitter'
-import type {MQTTDisconnect} from '../message/disconnect'
-import { MQTTDisconnectReason} from '../message/disconnect'
-import type {MQTTStatstics} from '../utils/constants'
-import type {Options} from './options'
+import type { MQTTDisconnect } from '../message/disconnect'
+import { MQTTDisconnectReason } from '../message/disconnect'
+import type { MQTTStatstics } from '../utils/constants'
+import type { Options } from './options'
 
 const defaultOpts = {
     timeout: 2000,
@@ -73,7 +73,7 @@ export class MQTTClient extends (EventEmitter as new () => TypedEmitter<MessageE
      * send MQTT DISCONNECT packet and closes the connection with the to the MQTT broker.
      */
     disconnect(msg?: MQTTDisconnect): void | never {
-        this.protocolHandler.disconnect(msg ? msg : {reasonCode: MQTTDisconnectReason.Code.NormalDisconnection})
+        this.protocolHandler.disconnect(msg ? msg : { reasonCode: MQTTDisconnectReason.Code.NormalDisconnection })
     }
 
     /**

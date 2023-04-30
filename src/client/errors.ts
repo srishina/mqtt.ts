@@ -1,4 +1,4 @@
-import type {MQTTDisconnectReason} from './../message/disconnect'
+import type { MQTTDisconnectReason } from './../message/disconnect'
 
 export class ServerDisconnectedError extends Error {
     private reason: MQTTDisconnectReason;

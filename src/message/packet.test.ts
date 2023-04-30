@@ -1,8 +1,8 @@
-import {PacketType} from '../utils/constants'
+import { PacketType } from '../utils/constants'
 
 import * as chai from 'chai'
-import {buildHeaderOnlyPacket} from './packet'
-import {DataStreamDecoder} from './../utils/codec'
+import { buildHeaderOnlyPacket } from './packet'
+import { DataStreamDecoder } from './../utils/codec'
 
 const expect = chai.expect
 describe('MQTT packet tests', () => {

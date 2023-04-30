@@ -1,6 +1,6 @@
 import * as chai from 'chai'
-import {PropertyID} from '../utils/constants'
-import {MQTTPubRecPacket, MQTTPubRecReason} from './pubrec'
+import { PropertyID } from '../utils/constants'
+import { MQTTPubRecPacket, MQTTPubRecReason } from './pubrec'
 
 const expect = chai.expect
 describe('MQTT PUBREC test', () => {
@@ -12,7 +12,7 @@ describe('MQTT PUBREC test', () => {
             0x00, id,
         ])
 
-        const pubrec = new MQTTPubRecPacket(id, {reason: MQTTPubRecReason.Code.Success})
+        const pubrec = new MQTTPubRecPacket(id, { reason: MQTTPubRecReason.Code.Success })
         expect(pubrec.build()).to.eql(encoded)
     })
 
@@ -26,7 +26,7 @@ describe('MQTT PUBREC test', () => {
             0x00
         ])
 
-        const pubrec = new MQTTPubRecPacket(id, {reason: MQTTPubRecReason.Code.NoMatchingSubscribers})
+        const pubrec = new MQTTPubRecPacket(id, { reason: MQTTPubRecReason.Code.NoMatchingSubscribers })
         expect(pubrec.build()).to.eql(encoded)
     })
 
@@ -46,7 +46,7 @@ describe('MQTT PUBREC test', () => {
             ...reasonBytes
         ])
 
-        const pubcomp = new MQTTPubRecPacket(id, {reason: MQTTPubRecReason.Code.Success, properties: {reasonString: reasonString}})
+        const pubcomp = new MQTTPubRecPacket(id, { reason: MQTTPubRecReason.Code.Success, properties: { reasonString: reasonString } })
         expect(pubcomp.build()).to.eql(encoded)
     })
 })

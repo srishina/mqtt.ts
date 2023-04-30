@@ -1,6 +1,6 @@
 import * as chai from 'chai'
-import type {MQTTConnect} from './connect'
-import { encodeConnectPacket} from './connect'
+import type { MQTTConnect } from './connect'
+import { encodeConnectPacket } from './connect'
 
 const expect = chai.expect
 
@@ -16,7 +16,7 @@ describe('MQTT CONNECT packet tests', () => {
             0x00, 0x05, 0x68, 0x65, 0x6C, 0x6C, 0x6F, // username - "hello"
             0x00, 0x05, 0x77, 0x6F, 0x72, 0x6C, 0x64, // password - "world"
         ])
-        const connBuf: MQTTConnect = {cleanStart: true, keepAlive: 24, properties: {}, userName: 'hello', password: new TextEncoder().encode('world')}
+        const connBuf: MQTTConnect = { cleanStart: true, keepAlive: 24, properties: {}, userName: 'hello', password: new TextEncoder().encode('world') }
         expect(encodeConnectPacket(connBuf)).to.eql(encoded)
     })
 
@@ -35,7 +35,7 @@ describe('MQTT CONNECT packet tests', () => {
         ])
         const connBuf: MQTTConnect = {
             cleanStart: true, keepAlive: 24,
-            userName: 'hello', password: new TextEncoder().encode('world'), properties: {receiveMaximum: 10, maximumPacketSize: 1024}
+            userName: 'hello', password: new TextEncoder().encode('world'), properties: { receiveMaximum: 10, maximumPacketSize: 1024 }
         }
         expect(encodeConnectPacket(connBuf)).to.eql(encoded)
     })
@@ -59,11 +59,11 @@ describe('MQTT CONNECT packet tests', () => {
         ])
         const connBuf: MQTTConnect = {
             cleanStart: true, keepAlive: 24,
-            willProperties: {willDelayInterval: 1024},
+            willProperties: { willDelayInterval: 1024 },
             willQoS: 1,
             willTopic: 'a/b',
             willPayload: 'Welcome!',
-            userName: 'hello', password: new TextEncoder().encode('world'), properties: {receiveMaximum: 10, maximumPacketSize: 1024}
+            userName: 'hello', password: new TextEncoder().encode('world'), properties: { receiveMaximum: 10, maximumPacketSize: 1024 }
         }
         expect(encodeConnectPacket(connBuf)).to.eql(encoded)
     })

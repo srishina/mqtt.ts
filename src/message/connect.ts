@@ -1,8 +1,8 @@
-import type { DataStreamDecoder} from '../utils/codec'
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from '../utils/codec'
-import {PacketType, PropertyID} from '../utils/constants'
-import {DecoderError} from '../client/errors'
-import {getPayloadAsArray} from './publish'
+import type { DataStreamDecoder } from '../utils/codec'
+import { PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce } from '../utils/codec'
+import { PacketType, PropertyID } from '../utils/constants'
+import { DecoderError } from '../client/errors'
+import { getPayloadAsArray } from './publish'
 
 export type MQTTConnectProperties = {
     sessionExpiryInterval?: number;
@@ -200,7 +200,7 @@ export function decodeConnectPacket(dec: DataStreamDecoder): MQTTConnect | never
     const usernameFlag = (connectFlag & 0x80) > 0
 
     const keepAlive = dec.decodeUint16()
-    const data: MQTTConnect = {cleanStart: cleanStart, keepAlive: keepAlive}
+    const data: MQTTConnect = { cleanStart: cleanStart, keepAlive: keepAlive }
 
     let propertyLen = dec.decodeVarUint32()
     if (propertyLen > 0) {
@@ -238,7 +238,7 @@ export function decodeConnectPacket(dec: DataStreamDecoder): MQTTConnect | never
                 if (!data.properties.userProperty) {
                     data.properties.userProperty = new Map<string, string>()
                 }
-                const {key, value} = dec.decodeUTF8StringPair()
+                const { key, value } = dec.decodeUTF8StringPair()
                 data.properties.userProperty.set(key, value)
                 propertyLen -= (key.length + value.length + 4)
                 break

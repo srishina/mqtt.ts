@@ -1,6 +1,6 @@
 import * as chai from 'chai'
-import {DataStreamDecoder} from '../utils/codec'
-import {decodeDisconnectPacket, encodeDisconnectPacket, MQTTDisconnectReason} from './disconnect'
+import { DataStreamDecoder } from '../utils/codec'
+import { decodeDisconnectPacket, encodeDisconnectPacket, MQTTDisconnectReason } from './disconnect'
 
 const expect = chai.expect
 
@@ -13,7 +13,7 @@ describe('MQTT DISCONNECT packet tests', () => {
             0x00, 0x00, 0x00, 0x05 // session interval = 5
         ])
 
-        const disconnBuf = encodeDisconnectPacket({reasonCode: MQTTDisconnectReason.Code.NormalDisconnection, properties: {sessionExpiryInterval: 5}})
+        const disconnBuf = encodeDisconnectPacket({ reasonCode: MQTTDisconnectReason.Code.NormalDisconnection, properties: { sessionExpiryInterval: 5 } })
         expect(disconnBuf).to.eql(encoded)
     })
 
@@ -33,7 +33,7 @@ describe('MQTT DISCONNECT packet tests', () => {
 
     it('DISCONNECT packet test no properties', () => {
         const encoded = new Uint8Array([0xE0, 0x00])
-        const disconnBuf = encodeDisconnectPacket({reasonCode: MQTTDisconnectReason.Code.NormalDisconnection})
+        const disconnBuf = encodeDisconnectPacket({ reasonCode: MQTTDisconnectReason.Code.NormalDisconnection })
         expect(disconnBuf).to.eql(encoded)
     })
 })

@@ -1,7 +1,7 @@
-import {DecoderError} from '../client/errors'
-import type { DataStreamDecoder} from '../utils/codec'
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from '../utils/codec'
-import {PacketType, PropertyID, MQTTCommonReasonCode, getCommonReasonCodeName} from '../utils/constants'
+import { DecoderError } from '../client/errors'
+import type { DataStreamDecoder } from '../utils/codec'
+import { PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce } from '../utils/codec'
+import { PacketType, PropertyID, MQTTCommonReasonCode, getCommonReasonCodeName } from '../utils/constants'
 
 export class MQTTDisconnectReason {
     private reasonCode: MQTTDisconnectReason.Code;
@@ -183,7 +183,7 @@ export function encodeDisconnectPacket(msg: MQTTDisconnect): Uint8Array | never 
 }
 
 export function decodeDisconnectPacket(dec: DataStreamDecoder): MQTTDisconnect {
-    const data: MQTTDisconnect = {reasonCode: dec.decodeByte()}
+    const data: MQTTDisconnect = { reasonCode: dec.decodeByte() }
     // read the properties
     let propertyLen = dec.decodeVarUint32()
     if (propertyLen > 0) {
@@ -207,7 +207,7 @@ export function decodeDisconnectPacket(dec: DataStreamDecoder): MQTTDisconnect {
                 if (!data.properties.userProperty) {
                     data.properties.userProperty = new Map<string, string>()
                 }
-                const {key, value} = dec.decodeUTF8StringPair()
+                const { key, value } = dec.decodeUTF8StringPair()
                 data.properties.userProperty.set(key, value)
                 propertyLen -= (key.length + value.length + 4)
                 break

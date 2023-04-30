@@ -1,6 +1,6 @@
-import type {MQTTConnAck} from '../message/connack'
-import type {MQTTSubscribe, MQTTSubAck} from '../message/subscribe'
-import type {LogEntry} from '../utils/constants'
+import type { MQTTConnAck } from '../message/connack'
+import type { MQTTSubscribe, MQTTSubAck } from '../message/subscribe'
+import type { LogEntry } from '../utils/constants'
 
 export type ResubscribeResult = {
     suback?: MQTTSubAck;

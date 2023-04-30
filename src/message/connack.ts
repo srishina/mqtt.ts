@@ -1,7 +1,7 @@
-import {PropertyID, MQTTCommonReasonCode, PacketType, getPropertyText, getCommonReasonCodeName} from '../utils/constants'
-import type { DataStreamDecoder} from '../utils/codec'
-import {PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce} from '../utils/codec'
-import {DecoderError} from '../client/errors'
+import { PropertyID, MQTTCommonReasonCode, PacketType, getPropertyText, getCommonReasonCodeName } from '../utils/constants'
+import type { DataStreamDecoder } from '../utils/codec'
+import { PropertySizeIfNotEmpty, PropertyEncoderIfNotEmpty, DataStreamEncoder, encodedVarUint32Size, PropertyDecoderOnlyOnce } from '../utils/codec'
+import { DecoderError } from '../client/errors'
 
 export namespace MQTTConnAckReason {
     export enum Code {
@@ -266,7 +266,7 @@ export function decodeConnAckPacket(dec: DataStreamDecoder): MQTTConnAck {
                 if (!data.properties.userProperty) {
                     data.properties.userProperty = new Map<string, string>()
                 }
-                const {key, value} = dec.decodeUTF8StringPair()
+                const { key, value } = dec.decodeUTF8StringPair()
                 data.properties.userProperty.set(key, value)
                 propertyLen -= (key.length + value.length + 4)
                 break
