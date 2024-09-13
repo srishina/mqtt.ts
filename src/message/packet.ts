@@ -5,7 +5,7 @@ import type { PacketType } from '../utils/constants';
 import { PropertyID } from '../utils/constants';
 
 export abstract class PacketWithID {
-    id: number
+    id: number;
 
     constructor(id: number) {
         this.id = id;

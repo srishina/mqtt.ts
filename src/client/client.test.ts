@@ -1,6 +1,7 @@
 import { MQTTClient } from './client';
 
 import * as chai from 'chai';
+import * as dirtyChai from 'dirty-chai';
 
 import * as chaiAsPromised from 'chai-as-promised';
 import { Deferred } from '../utils/codec';
@@ -26,6 +27,7 @@ import { MQTTPubCompReason } from '../message/pubcomp';
 import type { ResubscribeResult } from './eventhandler';
 
 chai.use(chaiAsPromised);
+chai.use(dirtyChai);
 const expect = chai.expect;
 
 const testURLLocalhost = 'ws://localhost:3000';
@@ -113,7 +115,7 @@ describe('MQTT client connection test with a mock server', function() {
 
         server.closeClientConnection();
         await delay(500); // wait for 500ms, to reinitializes
-        expect(resubscribed).to.true;
+        expect(resubscribed).to.true();
 
         const unsuback = await client.unsubscribe({ topicFilters: ['subu/test/#'] });
         expect([...unsuback.reasonCodes]).to.have.members([0]);
@@ -246,7 +248,7 @@ describe('MQTT client connection test with a mock server', function() {
         expect([...unsuback.reasonCodes]).to.have.members([0]);
         expect(() => client.disconnect()).to.not.throw();
 
-        expect(server.isPublishAckd()).to.true;
+        expect(server.isPublishAckd()).to.true();
         server.stop();
     });
 
@@ -295,7 +297,7 @@ describe('MQTT client connection test with a mock server', function() {
         expect([...unsuback.reasonCodes]).to.have.members([0]);
         expect(() => client.disconnect()).to.not.throw();
 
-        expect(server.isPublishAckd()).to.true;
+        expect(server.isPublishAckd()).to.true();
         server.stop();
     });
 

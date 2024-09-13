@@ -472,7 +472,7 @@ export class PIDGenerator {
 export class Deferred<T> {
     private resolveSelf?: (value: T | PromiseLike<T>) => void;
     private rejectSelf?: (reason?: any) => void;
-    private promise: Promise<T>
+    private promise: Promise<T>;
 
     constructor() {
         this.promise = new Promise<T>((resolve, reject) => {
@@ -494,7 +494,6 @@ export class Deferred<T> {
         }
     }
 
-    /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
     reject(reason?: any): void {
         if (this.rejectSelf !== undefined) {
             this.rejectSelf(reason);
@@ -503,6 +502,5 @@ export class Deferred<T> {
             throw new Error('Attempt to reject on undefined');
         }
     }
-    /* eslint-enable @typescript-eslint/explicit-module-boundary-types */
 }
 /* eslint-enable  @typescript-eslint/no-explicit-any */

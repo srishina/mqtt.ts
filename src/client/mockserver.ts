@@ -21,14 +21,14 @@ import type { PacketWithID } from '../message/packet';
 
 export class testMockServer {
     private port = 3000;
-    private server: WebSocket.Server
+    private server: WebSocket.Server;
     private remainingBuffer?: Uint8Array;
     private connAckPacket: MQTTConnAck;
     private responses: Map<PacketType, MQTTSubAck | MQTTUnsubAck | MQTTPublish | MQTTPubAck | MQTTPubRec | MQTTPubRel | MQTTPubComp> = new Map();
     private conn?: WebSocket;
     private triggerPublishOnsubscribe: boolean;
     private publishAckd: boolean;
-    private disconnectAtPktCount: number
+    private disconnectAtPktCount: number;
     private numRecvdPkts: number;
 
     constructor(connack: MQTTConnAck, disconnectAtPktCount?: number) {
@@ -71,6 +71,7 @@ export class testMockServer {
         this.server.close();
     }
 
+    // eslint-disable-next-line
     sendResponse<T extends PacketWithID, MQTTP extends unknown>(pktID: number, pktType: PacketType, objectType: { new(pktID: number, mqttObj: MQTTP): T; }): void {
         const resp = this.responses.get(pktType);
         if (resp && this.conn) {

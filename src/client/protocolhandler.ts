@@ -7,6 +7,7 @@ import { TopicMatcher, isPublishTopicValid } from '../utils/topic';
 // eslint-disable-next-line
 let WebSocket: any;
 if (typeof window === 'undefined') {
+    // eslint-disable-next-line
     WebSocket = require('ws');
 } else {
     WebSocket = global.WebSocket;
@@ -481,7 +482,11 @@ export class ProtocolHandler implements PingerCallback {
             this.incrementSendQuotaAndFlush();
             const completer = this.clientCompletionNotifiers.get(id);
             if (completer) {
-                error ? completer.onError(error) : completer.onComplete();
+                if (error) {
+                    completer.onError(error);
+                } else {
+                    completer.onComplete();
+                }
             }
             this.clientCompletionNotifiers.delete(id);
         }
@@ -491,7 +496,11 @@ export class ProtocolHandler implements PingerCallback {
         if (this.clientCompletionNotifiers.has(id)) {
             const completer = this.clientCompletionNotifiers.get(id);
             if (completer) {
-                error ? completer.onError(error) : completer.onComplete(result);
+                if (error) {
+                    completer.onError(error);
+                } else {
+                    completer.onComplete(result);
+                }
             }
             this.clientCompletionNotifiers.delete(id);
         }
@@ -501,7 +510,11 @@ export class ProtocolHandler implements PingerCallback {
         if (this.clientCompletionNotifiers.has(id)) {
             const completer = this.clientCompletionNotifiers.get(id);
             if (completer) {
-                error ? completer.onError(error) : completer.onComplete(result);
+                if (error) {
+                    completer.onError(error);
+                } else {
+                    completer.onComplete(result);
+                }
             }
             this.clientCompletionNotifiers.delete(id);
         }

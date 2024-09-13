@@ -2,10 +2,13 @@ import type { MQTTPublish } from './publish';
 import { decodePublishPacket, MQTTPublishPacket, getPayloadAsString } from './publish';
 
 import * as chai from 'chai';
+import * as dirtyChai from 'dirty-chai';
 import { PropertyID } from '../utils/constants';
 import { DataStreamDecoder } from '../utils/codec';
 
+chai.use(dirtyChai);
 const expect = chai.expect;
+
 const identifer = 18; // Packet identifier 18
 describe('MQTT PUBLISH basic test', () => {
 
@@ -31,8 +34,8 @@ describe('MQTT PUBLISH basic test', () => {
         const { pktID, result } = decodePublishPacket(byte0, decoder);
         expect(pktID).to.eql(identifer);
         expect(result.qos).to.eql(1);
-        expect(result.dup).to.true;
-        expect(result.retain).to.true;
+        expect(result.dup).to.true();
+        expect(result.retain).to.true();
         expect(result.topic).to.eql(topic);
         expect(getPayloadAsString(result.payload)).to.eql(payload);
     });
@@ -60,8 +63,8 @@ describe('MQTT PUBLISH basic test', () => {
         const { pktID, result } = decodePublishPacket(byte0, decoder);
         expect(pktID).to.eql(identifer);
         expect(result.qos).to.eql(2);
-        expect(result.dup).to.true;
-        expect(result.retain).to.true;
+        expect(result.dup).to.true();
+        expect(result.retain).to.true();
         expect(result.properties?.topicAlias).to.eql(topicAliasID);
         expect(result.topic).to.eql(topic);
         expect(getPayloadAsString(result.payload)).to.eql(payload);
@@ -87,8 +90,8 @@ describe('MQTT PUBLISH basic test', () => {
         const { pktID, result } = decodePublishPacket(byte0, decoder);
         expect(pktID).to.eql(0);
         expect(result.qos).to.eql(0);
-        expect(result.dup).to.false;
-        expect(result.retain).to.true;
+        expect(result.dup).to.false();
+        expect(result.retain).to.true();
         expect(result.topic).to.eql(topic);
         expect(getPayloadAsString(result.payload)).to.eql(payload);
     });

@@ -1,7 +1,9 @@
 import type { Observer } from './topic';
 import { isPublishTopicValid, isSubscribeTopicValid, TopicMatcher } from './topic';
 import * as chai from 'chai';
+import * as dirtyChai from 'dirty-chai';
 
+chai.use(dirtyChai);
 const expect = chai.expect;
 
 const emittingValue = 1024;
@@ -22,7 +24,7 @@ describe('MQTT topic tests', () => {
         ];
 
         validPublishTopics.forEach(function(element) {
-            expect(isPublishTopicValid(element)).to.be.true;
+            expect(isPublishTopicValid(element)).to.true();
         });
     });
 
@@ -42,7 +44,7 @@ describe('MQTT topic tests', () => {
         ];
 
         invalidPublishTopics.forEach(function(element) {
-            expect(isPublishTopicValid(element)).to.be.false;
+            expect(isPublishTopicValid(element)).to.false();
         });
     });
 
@@ -65,7 +67,7 @@ describe('MQTT topic tests', () => {
         ];
 
         validSubscribeTopics.forEach(function(element) {
-            expect(isSubscribeTopicValid(element)).to.be.true;
+            expect(isSubscribeTopicValid(element)).to.true();
         });
     });
 
@@ -84,7 +86,7 @@ describe('MQTT topic tests', () => {
         ];
 
         invalidSubscribeTopics.forEach(function(element) {
-            expect(isSubscribeTopicValid(element)).to.be.false;
+            expect(isSubscribeTopicValid(element)).to.false();
         });
     });
 

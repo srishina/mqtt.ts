@@ -1,8 +1,10 @@
 import * as chai from 'chai';
+import * as dirtyChai from 'dirty-chai';
 import { DataStreamDecoder } from '../utils/codec';
 import { PropertyID } from '../utils/constants';
 import { decodeConnAckPacket, MQTTConnAckReason } from './connack';
 
+chai.use(dirtyChai);
 const expect = chai.expect;
 
 describe('MQTT CONNACK packet tests', () => {
@@ -15,10 +17,10 @@ describe('MQTT CONNACK packet tests', () => {
         ]);
         const decoder = new DataStreamDecoder(encoded.buffer);
         const connAck = decodeConnAckPacket(decoder);
-        expect(connAck.sessionPresent).to.true;
+        expect(connAck.sessionPresent).to.true();
         expect(connAck.reasonCode).to.eql(MQTTConnAckReason.Code.NotAuthorized);
-        expect(connAck.properties).to.not.be.undefined;
-        expect(connAck.properties).to.not.be.null;
+        expect(connAck.properties).to.not.be.undefined();
+        expect(connAck.properties).to.not.be.null();
         expect(connAck.properties?.sessionExpiryInterval).to.eql(10);
     });
 

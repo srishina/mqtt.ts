@@ -207,11 +207,9 @@ const MQTTPropertyText = new Map<PropertyID, string>([
     [PropertyID.SharedSubscriptionAvailableID, 'Shared Subscription Available'],
 ]);
 
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 export function getPropertyText(id: PropertyID): string {
     return MQTTPropertyText.get(id)!;
 }
-/* eslint-enable @typescript-eslint/no-non-null-assertion */
 
 export type MQTTStatstics = {
     numBytesSent: number;
