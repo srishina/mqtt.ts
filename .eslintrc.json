@@ -16,8 +16,8 @@
   ],
   "rules": {
     "semi": [
-      "error",
-      "never"
+      2,
+      "always"
     ],
     "no-multiple-empty-lines": [
       "error",
