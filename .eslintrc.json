@@ -9,6 +9,11 @@
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended"
   ],
+  "ignorePatterns": [
+    "dist/",
+    "dist.browser/",
+    "dist.browser.demo/"
+  ],
   "rules": {
     "semi": [
       "error",
