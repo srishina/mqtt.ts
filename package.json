@@ -10,7 +10,7 @@
     "build": "tsc --declaration && tsc -p tsconfig.browser.json && tsc -p tsconfig.demo.json",
     "clean": "rm -rf ./dist ./dist.browser ./dist.browser.demo",
     "minify": "jsmin -o ./dist/index.min.js ./dist/index.js",
-    "postbuild": "cp ./demo/style.css ./demo/index.html ./dist.browser.demo/ && browserify ./dist.browser.demo/helper.js -p esmify > ./dist.browser.demo/mqttv5-cli-demo.js && terser --compress --mangle -o ./dist.browser.demo/mqttv5-cli-demo.min.js -- ./dist.browser.demo/mqttv5-cli-demo.js"
+    "postbuild": "cp ./demo/style.css ./demo/index.html ./dist.browser.demo/ && browserify ./dist.browser.demo/helper.js > ./dist.browser.demo/mqttv5-cli-demo.js && terser --compress --mangle -o ./dist.browser.demo/mqttv5-cli-demo.min.js -- ./dist.browser.demo/mqttv5-cli-demo.js"
   },
   "keywords": [],
   "contributors": [
@@ -18,9 +18,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "browser-resolve": "^2.0.0",
-    "chai-as-promised": "^7.1.1",
     "@types/bootstrap-select": "^1.13.1",
+    "chai-as-promised": "^7.1.1",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
     "@types/dirty-chai": "^2.0.5",
@@ -33,18 +32,15 @@
     "chai": "^4.2.0",
     "dirty-chai": "^2.0.1",
     "eslint": "^9.10.0",
-    "eslint-plugin-react": "^7.36.1",
-    "esmify": "^2.1.1",
-    "mocha": "^9.2.0",
+    "mocha": "^10.7.3",
     "ts-node": "^10.9.2",
     "typed-emitter": "^1.3.1",
     "typescript": "=5.5.4"
   },
   "dependencies": {
     "@types/ws": "^7.4.0",
-    "loglevel": "^1.7.1",
     "ws": "^8.18.0",
-    "yargs": "^17.3.1"
+    "yargs": "^17.7.2"
   },
   "files": [
     "dist",
